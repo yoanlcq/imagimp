@@ -36,7 +36,19 @@ EXE = bin/imagimp$(EXE_EXTENSION)
 LIBGLIMAGIMP = lib/$(DLL_PREFIX)glimagimp$(DLL_EXTENSION)
 
 
-all: $(LIBGLIMAGIMP) $(EXE)
+all: $(LIBGLIMAGIMP) $(EXE) | dirs
+
+
+dirs: bin lib obj/glimagimp
+obj:
+	mkdir $@
+obj/glimagimp: obj
+	mkdir $@
+lib:
+	mkdir $@
+bin:
+	mkdir $@
+
 
 obj/%.o : src/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
