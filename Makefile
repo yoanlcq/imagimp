@@ -39,7 +39,7 @@ endif
 
 CC = gcc
 CFLAGS = -g -Wall -Isrc
-LDLIBS = -Llib -Wl,-rpath,lib -lglimagimp -lm
+LDLIBS = -Llib -Wl,-rpath,lib -Wl,-rpath,../lib -lglimagimp -lm
 EXE = bin/imagimp$(EXE_EXTENSION)
 LIBGLIMAGIMP = lib/$(DLL_PREFIX)glimagimp$(DLL_EXTENSION)
 
@@ -50,7 +50,7 @@ all: $(LIBGLIMAGIMP) $(EXE)
 dirs: bin lib obj/glimagimp
 obj:
 	$(MKDIRP) $@
-obj$(SLASH)glimagimp: obj
+obj$(SLASH)glimagimp: | obj
 	$(MKDIRP) $@
 lib:
 	$(MKDIRP) $@
