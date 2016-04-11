@@ -2,7 +2,7 @@
 
 # Ce Makefile devrait marcher sous Linux, Windaube (MinGW) et OS X.
 # Normalement il n'y a plus besoin d'y toucher :
-# Créez juste vos fichiers dans src/ et laissez-lui le sale boulot ;)
+# Créez juste vos fichiers dans src/imagimp et laissez-lui le sale boulot ;)
 #
 # Aussi, il n'y a pas lieu de changer la variable d'environnement
 # LD_LIBRARY_PATH (ce que je trouve super intrusif). 
