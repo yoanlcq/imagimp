@@ -1,5 +1,3 @@
 bin/**
 lib/**
-obj/*.o
-obj/glimagimp/*.o
-
+obj/**
