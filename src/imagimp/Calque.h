@@ -48,7 +48,7 @@ typedef struct {
     Calque calque_virtuel;
 } Image;
 
-#include <pile.h>
+#include "pile.h"
 
 typedef struct {
 

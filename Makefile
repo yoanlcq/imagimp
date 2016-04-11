@@ -47,10 +47,12 @@ LIBGLIMAGIMP = lib/$(DLL_PREFIX)glimagimp$(DLL_EXTENSION)
 all: $(LIBGLIMAGIMP) $(EXE)
 
 
-dirs: bin lib obj/glimagimp
+dirs: bin lib obj/glimagimp obj/imagimp
 obj:
 	$(MKDIRP) $@
 obj$(SLASH)glimagimp: | obj
+	$(MKDIRP) $@
+obj$(SLASH)imagimp: | obj
 	$(MKDIRP) $@
 lib:
 	$(MKDIRP) $@
@@ -58,14 +60,14 @@ bin:
 	$(MKDIRP) $@
 
 
-obj/%.o : src/%.c | dirs
+obj/imagimp/%.o : src/imagimp/%.c | dirs
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(EXE): $(addsuffix .o, \
-			$(addprefix obj/, \
+			$(addprefix obj/imagimp/, \
 				$(notdir \
 					$(basename \
-						$(wildcard src/*.c)))))
+						$(wildcard src/imagimp/*.c)))))
 	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS)
 
 obj/glimagimp/%.o: src/glimagimp/%.c | dirs
