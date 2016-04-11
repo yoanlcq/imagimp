@@ -24,7 +24,7 @@ ifeq ($(OS),windows)
 	DLL_PREFIX=
 	DLL_EXTENSION=.dll
 	LIBGL=opengl32
-	CLEANCMD = IF exist obj ( rmdir /Q /S obj lib && $(MKDIRP) obj\glimagimp lib )
+	CLEANCMD = IF exist obj ( rmdir /Q /S obj lib )
 else
 	MKDIRP=mkdir -p
 	SLASH=/
@@ -32,7 +32,7 @@ else
 	DLL_PREFIX=lib
 	DLL_EXTENSION=.so
 	LIBGL=GL
-	CLEANCMD = rm -rf obj/* lib/* && $(MKDIRP) obj/glimagimp
+	CLEANCMD = rm -rf obj lib
 endif
 
 .PHONY: all clean mrproper re dirs
