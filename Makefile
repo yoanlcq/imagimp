@@ -47,7 +47,7 @@ LIBGLIMAGIMP = lib/$(DLL_PREFIX)glimagimp$(DLL_EXTENSION)
 all: $(LIBGLIMAGIMP) $(EXE)
 
 
-dirs: bin lib obj/glimagimp obj/imagimp
+dirs: bin lib obj$(SLASH)glimagimp obj$(SLASH)imagimp
 obj:
 	$(MKDIRP) $@
 obj$(SLASH)glimagimp: | obj
