@@ -1,37 +1,20 @@
-#include <string.h>
 #include "Calque.h"
 
-void Calque_histogrammeRVB(const Calque *calque, Histogramme histogramme) {
-    size_t x, y;
-    unsigned long somme;
-    memset(histogramme, 0, sizeof(Histogramme));
-    for(y=0 ; y<calque->h ; ++y) {
-        for(x=0 ; x<calque->l ; ++x) {
-            somme = Calque_lireR(calque, x, y);
-                  + Calque_lireV(calque, x, y);
-                  + Calque_lireB(calque, x, y);
-            ++histogramme[(unsigned char)(somme/3ul)];
-        }
-    }
+
+void Melange_normal    (Calque *resultat, const Calque *dessous, const Calque *dessus) {
 }
-void Calque_histogrammeR(const Calque *calque, Histogramme histogramme) {
-    size_t x, y;
-    memset(histogramme, 0, sizeof(Histogramme));
-    for(y=0 ; y<calque->h ; ++y)
-        for(x=0 ; x<calque->l ; ++x)
-            ++histogramme[Calque_lireR(calque, x, y)];
+void Melange_addition  (Calque *resultat, const Calque *dessous, const Calque *dessus) {}
+void Melange_produit   (Calque *resultat, const Calque *dessous, const Calque *dessus) {}
+
+
+void Calque_recalculer(Calque *calque) {}
+void Calque_appliquerPremiereLUT(Calque *calque) {}
+void PileCalques_allouer(PileCalques *p, size_t l, size_t h) {
+    ImageRVB_allouer(&p->rendu, l, h);
+    ImageRVB_remplirEchiquier(&p->rendu, 16, 64, 150);
 }
-void Calque_histogrammeV(const Calque *calque, Histogramme histogramme) {
-    size_t x, y;
-    memset(histogramme, 0, sizeof(Histogramme));
-    for(y=0 ; y<calque->h ; ++y)
-        for(x=0 ; x<calque->l ; ++x)
-            ++histogramme[Calque_lireV(calque, x, y)];
-}
-void Calque_histogrammeB(const Calque *calque, Histogramme histogramme) {
-    size_t x, y;
-    memset(histogramme, 0, sizeof(Histogramme));
-    for(y=0 ; y<calque->h ; ++y)
-        for(x=0 ; x<calque->l ; ++x)
-            ++histogramme[Calque_lireB(calque, x, y)];
-}
+void PileCalques_recalculer(PileCalques *p) {}
+void PileCalques_ajouterCalqueVierge(PileCalques *p) {}
+void PileCalques_supprimerCalqueCourant(PileCalques *p) {}
+void PileCalques_changerCalqueCourant(PileCalques *p, int decalage) {}
+void PileCalques_desallouerTout(PileCalques *p) {}

@@ -1,84 +1,36 @@
 #include <stddef.h>
 #include <stdint.h>
-#include "dliste.h"
+
+#include "LUT.h"
+#include "ImageRVB.h"
 
 typedef struct Calque Calque;
+/* Ces fonctions prennent des Calques en paramètres et non des ImageRVB car
+ * il nous faut l'information d'opacité du calque. */
+/* Lecture intéressante : https://docs.gimp.org/en/gimp-concepts-layer-modes.html */
 typedef void (*FonctionMelange)(Calque *resultat, const Calque *dessous, const Calque *dessus);
-
-void Melange_add(Calque *resultat, const Calque *dessous, const Calque *dessus);
-void Melange_mul(Calque *resultat, const Calque *dessous, const Calque *dessus);
-
-typedef struct {
-    unsigned char table[256];
-} LUT;
-
-DEFINIR_DLISTE(ListeLUTs, LUT);
+void Melange_normal    (Calque *resultat, const Calque *dessous, const Calque *dessus);
+void Melange_addition  (Calque *resultat, const Calque *dessous, const Calque *dessus);
+void Melange_produit   (Calque *resultat, const Calque *dessous, const Calque *dessus);
 
 struct Calque {
-    unsigned char *rvb;
-    size_t l, h;
+    ImageRVB img_source, img_calculee;
+    ListeLUTs luts;
     FonctionMelange melange;
     float opacite;
-    ListeLUTs luts;
-    unsigned char *rvb_rendu;
+    Calque *en_dessous, *au_dessus;
 };
 
-static inline unsigned char Calque_lireR(const Calque *c, size_t x, size_t y) {
-    return c->rvb[3*(y*c->l + x)];
-}
-static inline unsigned char Calque_lireV(const Calque *c, size_t x, size_t y) {
-    return c->rvb[3*(y*c->l + x) + 1];
-}
-static inline unsigned char Calque_lireB(const Calque *c, size_t x, size_t y) {
-    return c->rvb[3*(y*c->l + x) + 1];
-}
-
-typedef uint32_t Histogramme[256];
-
-void Calque_histogrammeRVB(const Calque *calque, Histogramme histogramme);
-void Calque_histogrammeR(const Calque *calque, Histogramme histogramme);
-void Calque_histogrammeV(const Calque *calque, Histogramme histogramme);
-void Calque_histogrammeB(const Calque *calque, Histogramme histogramme);
-
-DEFINIR_DLISTE(ListeCalques, Calque);
-
 typedef struct {
-    ListeCalques calques;
-    Calque rendu;
-    Calque calque_virtuel;
-} Image;
+    Calque *courant; /* C'est la aussi la liste doublement chaînée de 
+                        tous les calques. */
+    ImageRVB rendu, virtuel;
+} PileCalques;
 
-#include "pile.h"
-
-typedef struct {
-
-} Action;
-
-DEFINIR_PILE(Historique, Action);
-
-
-void Image_importerPPM();
-void Image_exporterPPM();
-void Image_ajouterCalqueVierge();
-/* Ajouter un calque vierge (CAL_1), */
-/* Naviguer dans les calques (CAL_2), */
-/* Modfier le paramètre d'opacité d'un calque (CAL_3), */
-/* Modifer la fonction de mélange du calque (addition/ajout) (CAL_4), */
-/* Supprimer le calque courant (CAL_5). */
-/*
- * 1. Ajouter une LUT (LUT_1),
- * 2. Appliquer une LUT a une image (LUT_2),
- * 3. Supprimer la derniere LUT (LUT_3).
- * Les LUT que l'application devra pouvoir ajouter sont listées ci-dessous. Chacune de ces modifications
- * possède un code indiqué entre parentheses.
- * augmentation de luminosité (ADDLUM), dépend d'un paramètre
- * diminution de luminosité (DIMLUM), dépend d'un paramètre
- * augmentation du contraste (ADDCON), dépend d'un paramètre
- * diminution du contraste (DIMLUM), dépend d'un parametre
- * inversion de la couleur (INVERT),
- * effet sepia (SEPIA), peut dépendre d'un ou plusieurs paramètres.
- * L'ajout d'une LUT se fera toujours en fin de liste de LUT pour un calque donné. L'ajout se fait sur le calque
- * courant.
- * L'application d'une LUT à une image est detaillee dans le paragraphe 1.5.
- * La suppression d'une LUT est effectuée a la fin de la liste. Elle se fait sur le calque courant.
- */
+void Calque_recalculer(Calque *calque);
+void Calque_appliquerPremiereLUT(Calque *calque);
+void PileCalques_allouer(PileCalques *p, size_t l, size_t h);
+void PileCalques_recalculer(PileCalques *p);
+void PileCalques_ajouterCalqueVierge(PileCalques *p);
+void PileCalques_supprimerCalqueCourant(PileCalques *p);
+void PileCalques_desallouerTout(PileCalques *p);
