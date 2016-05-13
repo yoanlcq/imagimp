@@ -12,6 +12,8 @@ void Imagimp_lancer(Imagimp *imagimp, int argc, char *argv[]) {
     imagimp->fonction_dessin = Imagimp_fonctionDessin;
     const size_t l=512, h=512, ihm_l=200;
     PileCalques_allouer(&imagimp->calques, l, h);
+    ImageRVB_remplirEchiquier(&imagimp->calques.virtuel, 16, 64, 150);
+    PileCalques_recalculer(&imagimp->calques);
 #define img (imagimp->calques.rendu)
     initGLIMAGIMP_IHM(img.l, img.h, img.rvb, img.l+ihm_l, img.h);
 #undef img
