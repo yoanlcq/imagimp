@@ -24,7 +24,19 @@ struct Calque {
 typedef struct {
     Calque *courant; /* C'est la aussi la liste doublement chaînée de 
                         tous les calques. */
-    ImageRVB rendu, virtuel;
+    /* rendu_gl résoud deux problèmes:
+     * 1) glimagimp affiche les images à l'envers, verticalement, on doit donc
+     *    envoyer à actualiseImage() une copie retournée de l'image;
+     * 2) Le pointeur passé à actualiseImage() doit etre valide suffisament
+     *    longtemps pour que le driver OpenGL aie le temps de le récupérer.
+     *    En gros, ça crashe souvent si on passe un tableau dont la durée de
+     *    vie est courte à actualiseImage().
+     * J'ai essayé de contourner le problème avec gluOtho2D() et glPixelZoom(),
+     * sans succès, donc j'ai opté pour cette solution crade.
+     */
+    ImageRVB rendu;
+    ImageRVB rendu_gl;
+    ImageRVB virtuel;
 } PileCalques;
 
 void Calque_recalculer(Calque *calque);

@@ -21,6 +21,5 @@ int main(int argc, char *argv[]) {
     fixeFonctionClavierSpecial(sur_clavier_special);
     fixeFonctionClicSouris(sur_souris);
     fixeFonctionDessin(sur_dessin);
-    Imagimp_lancer(&imagimp, argc, argv);
-    return 0;
+    return Imagimp_lancer(&imagimp, argc, argv) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

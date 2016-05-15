@@ -3,11 +3,51 @@
 #include "Calque.h"
 
 
+#define FOR_EACH_PIXEL() \
+            size_t y, x; \
+            for(y=0 ; y<resultat->img_calculee.h ; ++y) \
+                for(x=0 ; x<resultat->img_calculee.l ; ++x)
+#define OUT(C) (*ImageRVB_pixel##C(&resultat->img_calculee, x, y))
+#define SRC(C) (*ImageRVB_pixel##C(&dessus->img_calculee, x, y))
+#define DST(C) (*ImageRVB_pixel##C(&dessous->img_calculee, x, y))
+#define OUT_A (resultat->opacite)
+#define SRC_A (dessus->opacite)
+#define DST_A (dessous->opacite)
+#define MAX(a,b) ((a)>(b) ? (a) : (b))
 void Melange_normal    (Calque *resultat, const Calque *dessous, const Calque *dessus) {
+    /* Voir https://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending */
+    OUT_A = SRC_A + DST_A*(1.f-SRC_A);
+    FOR_EACH_PIXEL() {
+        OUT(R) = (SRC(R)*SRC_A + DST(R)*DST_A*(1.f-SRC_A))/OUT_A;
+        OUT(V) = (SRC(V)*SRC_A + DST(V)*DST_A*(1.f-SRC_A))/OUT_A;
+        OUT(B) = (SRC(B)*SRC_A + DST(B)*DST_A*(1.f-SRC_A))/OUT_A;
+    }
 }
-void Melange_addition  (Calque *resultat, const Calque *dessous, const Calque *dessus) {}
-void Melange_produit   (Calque *resultat, const Calque *dessous, const Calque *dessus) {}
-
+void Melange_addition  (Calque *resultat, const Calque *dessous, const Calque *dessus) {
+    OUT_A = SRC_A + DST_A*(1.f-SRC_A);
+    FOR_EACH_PIXEL() {
+        OUT(R) = MAX(255, SRC(R)*SRC_A + DST(R));
+        OUT(V) = MAX(255, SRC(V)*SRC_A + DST(V));
+        OUT(B) = MAX(255, SRC(B)*SRC_A + DST(B));
+    }
+}
+void Melange_produit   (Calque *resultat, const Calque *dessous, const Calque *dessus) {
+    OUT_A = SRC_A + DST_A*(1.f-SRC_A);
+    FOR_EACH_PIXEL() {
+        /* OUT(R) = DST(R) + SRC_A*(255.f*(SRC(R)/255.f)*(DST(R)/255.f) - DST(R)); */
+        OUT(R) = SRC_A*SRC(R) + (1.f-SRC_A)*DST(R);
+        OUT(V) = SRC_A*SRC(V) + (1.f-SRC_A)*DST(V);
+        OUT(B) = SRC_A*SRC(B) + (1.f-SRC_A)*DST(B);
+    }
+}
+#undef FOR_EACH_PIXEL
+#undef OUT
+#undef SRC
+#undef DST
+#undef OUT_A
+#undef SRC_A
+#undef DST_A
+#undef MAX
 
 static void appliquerLUT(ImageRVB *img, const LUT *lut) {
     size_t y, x;
@@ -19,7 +59,7 @@ static void appliquerLUT(ImageRVB *img, const LUT *lut) {
 }
 void Calque_recalculer(Calque *calque) {
     ImageRVB *img = &calque->img_calculee;
-    memcpy(img->rvb, calque->img_source.rvb, 3*img->l*img->h);
+    memcpy(img->rvb, calque->img_source.rvb, 3*calque->img_source.l*calque->img_source.h);
     LUT* lut;
     for(lut=calque->luts.premiere ; lut ; lut=lut->suivante)
         appliquerLUT(img, lut);
@@ -41,6 +81,7 @@ static Calque* Calque_nouveau(size_t l, size_t h) {
     c->opacite = 1.f;
     c->en_dessous = c->au_dessus = NULL;
     ImageRVB_remplirDegradeDebile(&c->img_source);
+    Calque_recalculer(c);
     return c;
 }
 static void Calque_detruire(Calque *c) {
@@ -52,10 +93,12 @@ static void Calque_detruire(Calque *c) {
 void PileCalques_allouer(PileCalques *p, size_t l, size_t h) {
     ImageRVB_allouer(&p->virtuel, l, h);
     ImageRVB_allouer(&p->rendu, l, h);
+    ImageRVB_allouer(&p->rendu_gl, l, h);
     p->courant = Calque_nouveau(l, h);
 }
 void PileCalques_desallouerTout(PileCalques *p) {
     ImageRVB_desallouer(&p->rendu);
+    ImageRVB_desallouer(&p->rendu_gl);
     ImageRVB_desallouer(&p->virtuel);
     Calque *cur, *suiv;
     for(cur=p->courant ; cur->en_dessous ; cur=cur->en_dessous)
@@ -66,15 +109,35 @@ void PileCalques_desallouerTout(PileCalques *p) {
     }
 }
 void PileCalques_recalculer(PileCalques *p) {
+    Calque rendu;
+    memcpy(p->rendu.rvb, p->virtuel.rvb, 3*p->rendu.l*p->rendu.h);
+    rendu.img_calculee.rvb = p->rendu.rvb;
+    rendu.img_calculee.l   = p->rendu.l;
+    rendu.img_calculee.h   = p->rendu.h;
+    rendu.opacite = 1.f;
     Calque *cur;
     for(cur=p->courant ; cur->en_dessous ; cur=cur->en_dessous)
         ;
-    /*
-    Calque 
     for( ; cur ; cur=cur->au_dessus)
-        cur->melange(rendu, rendu, cur);
-        */
+        cur->melange(&rendu, &rendu, cur);
+    ImageRVB_copierSymetrieVerticale(&p->rendu_gl, &p->rendu);
 }
-void PileCalques_ajouterCalqueVierge(PileCalques *p) {}
-void PileCalques_supprimerCalqueCourant(PileCalques *p) {}
-void PileCalques_changerCalqueCourant(PileCalques *p, int decalage) {}
+void PileCalques_ajouterCalqueVierge(PileCalques *p) {
+    Calque *ancien = p->courant->au_dessus;
+    Calque *nouveau = Calque_nouveau(p->rendu.l, p->rendu.h);
+    p->courant->au_dessus = nouveau;
+    nouveau->en_dessous = p->courant;
+    nouveau->au_dessus = ancien;
+    if(ancien) ancien->en_dessous = nouveau;
+    p->courant = nouveau;
+}
+void PileCalques_supprimerCalqueCourant(PileCalques *p) {
+    Calque *dessus = p->courant->au_dessus;
+    Calque *dessous = p->courant->en_dessous;
+    if(!dessus && !dessous)
+        return;
+    Calque_detruire(p->courant);
+    if(dessous) dessous->au_dessus = dessus;
+    if(dessus)  dessus->en_dessous = dessous;
+    p->courant = dessous;
+}

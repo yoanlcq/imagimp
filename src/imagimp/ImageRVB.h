@@ -12,7 +12,13 @@ typedef struct ImageRVB ImageRVB;
 
 typedef uint32_t Histogramme[256];
 
+static uint8_t ImageRVB_faux_pixel[3];
+#include <string.h>
 static inline uint8_t *ImageRVB_pixelR(const ImageRVB *img, size_t x, size_t y) {
+    if(x>=img->l || y>=img->h) {
+        memset(ImageRVB_faux_pixel, 0, 3);
+        return ImageRVB_faux_pixel;
+    }
     return img->rvb+3*(img->l*y+x);
 }
 static inline uint8_t *ImageRVB_pixelV(const ImageRVB *img, size_t x, size_t y) {
@@ -34,6 +40,11 @@ void ImageRVB_remplirDegradeDebile(ImageRVB *img);
 /* cote: le côté de chaque carré de l'échiquier. */
 void ImageRVB_remplirEchiquier(ImageRVB *img, size_t cote, 
                                uint8_t gris_clair, uint8_t gris_sombre);
+
+void ImageRVB_remplirRVB(ImageRVB *img, uint8_t r, uint8_t v, uint8_t b);
+
+/* dst et src doivent bien ^etre deux images différentes dans la mémoire. */
+void ImageRVB_copierSymetrieVerticale(ImageRVB * restrict dst, const ImageRVB * restrict src);
 
 /* importer() charge l'image dynamiquement. Il faut penser à la désallouer 
  * quand on n'en a plus besoin. */

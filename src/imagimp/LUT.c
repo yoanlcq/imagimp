@@ -2,7 +2,10 @@
 #include <stdint.h>
 #include "LUT.h"
 
-bool ListeLUTs_allouer(ListeLUTs *liste) { return false; }
+bool ListeLUTs_allouer(ListeLUTs *liste) {
+    liste->premiere = liste->derniere = NULL;
+    return false;
+}
 void ListeLUTs_desallouer(ListeLUTs *liste) {}
 bool ListeLUTs_ajouterDerniere(ListeLUTs *liste) { return false; }
 void ListeLUTs_retirerDerniere(ListeLUTs *liste) {}

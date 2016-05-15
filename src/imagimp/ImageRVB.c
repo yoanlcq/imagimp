@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 #include "ImageRVB.h"
 
 
@@ -60,6 +61,7 @@ bool ImageRVB_importerPPM(ImageRVB *img, const char *nom_fichier) {
 
     uint8_t *gris;
     size_t i;
+    fseek(fichier, 5, SEEK_CUR); /* J'sais pas pourquoi, mais y'a besoin de faire ça. */
     switch(variante) {
     case 6: fread(img->rvb, 1, 3*img->l*img->h, fichier); break;
     case 5:
@@ -101,6 +103,14 @@ void ImageRVB_remplirDegradeDebile(ImageRVB *img) {
         *ImageRVB_pixelB(img, x, y) = 255.f*y/(float)img->h;
 }
 
+void ImageRVB_remplirRVB(ImageRVB *img, uint8_t r, uint8_t v, uint8_t b) {
+    size_t y, x;
+    for(y=0 ; y<img->h ; ++y) for(x=0 ; x<img->l ; ++x)
+        *ImageRVB_pixelR(img, x, y) = r, 
+        *ImageRVB_pixelV(img, x, y) = v,
+        *ImageRVB_pixelB(img, x, y) = b;
+}
+
 void ImageRVB_remplirEchiquier(ImageRVB *img, size_t cote, 
                                uint8_t gris_clair, uint8_t gris_sombre) {
     size_t y, x;
@@ -110,6 +120,17 @@ void ImageRVB_remplirEchiquier(ImageRVB *img, size_t cote,
             memset(ImageRVB_pixelR(img, x, y), 
                    (sombre ? gris_sombre : gris_clair), 
                    3*(cote < img->l-x ? cote : img->l-x));
+}
+
+void ImageRVB_copierSymetrieVerticale(ImageRVB * restrict dst, const ImageRVB * restrict src) {
+    assert(dst != src && "Cette fonction est pour copier entre deux images"
+                         " distinctes, pas d'une seule vers elle-meme.");
+    /* Ligne Haute, Ligne Basse, LarGeur */
+    size_t lh, lb, lg = 3*src->l;
+    for(lh=0, lb=src->h-1 ; lh<lb ; ++lh, --lb) {
+        memcpy(dst->rvb + lh*lg, src->rvb + lb*lg, lg);
+        memcpy(dst->rvb + lb*lg, src->rvb + lh*lg, lg);
+    }
 }
 
 void ImageRVB_histogrammeRVB(const ImageRVB *img, Histogramme histogramme) {
