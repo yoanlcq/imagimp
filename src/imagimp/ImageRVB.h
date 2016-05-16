@@ -46,7 +46,8 @@ void ImageRVB_remplirEchiquier(ImageRVB *img, size_t cote,
 
 void ImageRVB_remplirRVB(ImageRVB *img, uint8_t r, uint8_t v, uint8_t b);
 
-/* dst et src doivent bien ^etre deux images différentes dans la mémoire. */
+/* dst et src doivent bien être deux images différentes dans la mémoire. */
+void ImageRVB_copier(ImageRVB * restrict dst, const ImageRVB *restrict src);
 void ImageRVB_copierSymetrieVerticale(ImageRVB * restrict dst, const ImageRVB * restrict src);
 
 /* importer() charge l'image dynamiquement. Il faut penser à la désallouer 

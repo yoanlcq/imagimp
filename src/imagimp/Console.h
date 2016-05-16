@@ -21,6 +21,7 @@ extern const ConsoleCmd CONSOLE_CMDS[CONSOLE_MAX_CMDS];
 struct Console {
     size_t curseur;
     char tampon[CONSOLE_MAX_TAMPON];
+    char tampon_suggestion[CONSOLE_MAX_TAMPON];
     char reponse[CONSOLE_MAX_REPONSE];
     bool reponse_rouge;
     uint8_t cmd_suggerees[CONSOLE_MAX_CMDS]; /* tableau d'index, triés. */

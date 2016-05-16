@@ -122,6 +122,12 @@ void ImageRVB_remplirEchiquier(ImageRVB *img, size_t cote,
                    3*(cote < img->l-x ? cote : img->l-x));
 }
 
+void ImageRVB_copier(ImageRVB * restrict dst, const ImageRVB *restrict src) {
+    assert(dst != src && "Cette fonction est pour copier entre deux images"
+                         " distinctes, pas d'une seule vers elle-meme.");
+    memcpy(dst->rvb, src->rvb, 3*dst->l*dst->h);
+}
+
 void ImageRVB_copierSymetrieVerticale(ImageRVB * restrict dst, const ImageRVB * restrict src) {
     assert(dst != src && "Cette fonction est pour copier entre deux images"
                          " distinctes, pas d'une seule vers elle-meme.");

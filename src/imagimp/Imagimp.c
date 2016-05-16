@@ -39,8 +39,10 @@ bool Imagimp_lancer(Imagimp *imagimp, int argc, char *argv[]) {
 
     imagimp->largeur_ihm = 256;
     imagimp->hauteur_lignecmd = 14;
+    imagimp->vue_export = true;
 
     memset(&imagimp->console, 0, sizeof(Console));
+    strncpy(imagimp->console.reponse, "VIMagimp | Lucas DUSSOUCHAUD - Yoan LECOQ | promo IMAC 2018", CONSOLE_MAX_REPONSE);
 
     PileCalques_allouer(&imagimp->calques, l, h);
     ImageRVB_remplirEchiquier(&imagimp->calques.virtuel, 16, 64, 150);
@@ -56,11 +58,15 @@ bool Imagimp_lancer(Imagimp *imagimp, int argc, char *argv[]) {
 
 void Imagimp_fonctionClavierTexte(Imagimp *imagimp, unsigned char ascii, int x, int y) {
     switch(ascii) {
-    case '\b': Console_enleverCaractere(&imagimp->console); break;
     case '\t': Console_completer(&imagimp->console); break;
     case '\n':
     case '\r':
         Console_executer(&imagimp->console, imagimp);
+    case '\b': 
+        if(ascii=='\b' && imagimp->console.tampon[0]) { 
+            Console_enleverCaractere(&imagimp->console);
+            break;
+        }
     case '\033':
         Console_effacerEntree(&imagimp->console);
         imagimp->fonction_clavier = Imagimp_fonctionClavier;
@@ -73,25 +79,35 @@ void Imagimp_fonctionClavierTexte(Imagimp *imagimp, unsigned char ascii, int x, 
 }
 /* On peut pas prendre un const Imagimp parce que actualiseImage() ne prend
  * pas un tableau const. Shame. */
-static void Imagimp_actualiserAffichageCanevas(Imagimp *imagimp) {
-    actualiseImage(imagimp->calques.rendu_gl.rvb);
+void Imagimp_actualiserAffichageCanevas(Imagimp *imagimp) {
+    if(imagimp->vue_export)
+        actualiseImage(imagimp->calques.rendu_gl.rvb);
+    else {
+        ImageRVB_copierSymetrieVerticale(&imagimp->calques.rendu_vuesource_gl, &imagimp->calques.courant->img_source);
+        actualiseImage(imagimp->calques.rendu_vuesource_gl.rvb);
+        ImageRVB_histogrammeRVB(&imagimp->calques.courant->img_source, &imagimp->calques.histogramme_vuesource_rvb);
+        ImageRVB_histogrammeR  (&imagimp->calques.courant->img_source, &imagimp->calques.histogramme_vuesource_r);
+        ImageRVB_histogrammeV  (&imagimp->calques.courant->img_source, &imagimp->calques.histogramme_vuesource_v);
+        ImageRVB_histogrammeB  (&imagimp->calques.courant->img_source, &imagimp->calques.histogramme_vuesource_b);
+    }
 }
 
 /* Attention, cette fonction est gardée pour des raisons d'héritage.
  * Voir Imagimp_fonctionClavierTexte() à la place. */
 void Imagimp_fonctionClavier(Imagimp *imagimp, unsigned char ascii, int x, int y) {
-    printf("Touche : '%c' (souris: %d, %d)\n", ascii, x, y);
+    /* printf("Touche : '%c' (souris: %d, %d)\n", ascii, x, y); */
     switch(ascii) {
+    default:
     case '\t':
+    case ':':
         Console_effacerEntree(&imagimp->console);
         imagimp->fonction_clavier = Imagimp_fonctionClavierTexte;
         imagimp->fonction_clavier_special = Imagimp_fonctionClavierTexteSpecial;
+        if(ascii!='\t' && ascii!=':')
+            Imagimp_fonctionClavierTexte(imagimp, ascii, x, y);
         break;
     /*
     case 'i': 
-        ImageRVB_desallouer(&imagimp->calques.courant->img_source);
-        ImageRVB_importerPPM(&imagimp->calques.courant->img_source,
-                             "images/Phoenix.512.ppm");
         Calque_recalculer(imagimp->calques.courant);
         PileCalques_recalculer(&imagimp->calques);
         Imagimp_actualiserAffichageCanevas(imagimp);
@@ -103,15 +119,8 @@ void Imagimp_fonctionClavier(Imagimp *imagimp, unsigned char ascii, int x, int y
         exit(EXIT_SUCCESS);
         break;
     case 'c':
-        PileCalques_ajouterCalqueVierge(&imagimp->calques);
-        Calque_recalculer(imagimp->calques.courant);
-        PileCalques_recalculer(&imagimp->calques);
-        Imagimp_actualiserAffichageCanevas(imagimp);
         break;
     case 'x':
-        PileCalques_supprimerCalqueCourant(&imagimp->calques);
-        PileCalques_recalculer(&imagimp->calques);
-        Imagimp_actualiserAffichageCanevas(imagimp);
         break;
     case 'm':
         if(imagimp->calques.courant->melange == Melange_normal)
@@ -195,7 +204,7 @@ void Imagimp_fonctionClavier(Imagimp *imagimp, unsigned char ascii, int x, int y
 }
 
 void Imagimp_fonctionClavierTexteSpecial(Imagimp *imagimp, int touche, int x, int y) {
-    printf("Touche spéciale : %d (souris: %d, %d)\n", touche, x, y);
+    /*printf("Touche spéciale : %d (souris: %d, %d)\n", touche, x, y);*/
     switch(touche) {
     case GLUT_KEY_F1: break;
     case GLUT_KEY_F2: break;
@@ -225,7 +234,7 @@ void Imagimp_fonctionClavierTexteSpecial(Imagimp *imagimp, int touche, int x, in
     }
 }
 void Imagimp_fonctionClavierSpecial(Imagimp *imagimp, int touche, int x, int y) {
-    printf("Touche spéciale : %d (souris: %d, %d)\n", touche, x, y);
+    /*printf("Touche spéciale : %d (souris: %d, %d)\n", touche, x, y);*/
     switch(touche) {
     case GLUT_KEY_F1: break;
     case GLUT_KEY_F2: break;
@@ -278,8 +287,10 @@ void Imagimp_fonctionClavierSpecial(Imagimp *imagimp, int touche, int x, int y) 
 }
 
 void Imagimp_fonctionSouris(Imagimp *imagimp, int bouton, int appuye, int x, int y) {
+    /*
     printf("clic: %d (%s) vers %d, %d\n", 
            bouton, appuye ? "pressé" : "laché", x, y);
+    */
 }
 
 static void dessinerHistogramme(const Histogramme *histo, float x, float y, float l, float h) {
@@ -292,10 +303,10 @@ static void dessinerHistogramme(const Histogramme *histo, float x, float y, floa
 }
 static void dessinerLesHistogrammes(const Imagimp *imagimp, float histo_h) {
     const Histogramme * const histos[4] = {
-        &imagimp->calques.histogramme_rendu_rvb,
-        &imagimp->calques.histogramme_rendu_r,
-        &imagimp->calques.histogramme_rendu_v,
-        &imagimp->calques.histogramme_rendu_b,
+        (imagimp->vue_export ? &imagimp->calques.histogramme_rendu_rvb : &imagimp->calques.histogramme_vuesource_rvb),
+        (imagimp->vue_export ? &imagimp->calques.histogramme_rendu_r : &imagimp->calques.histogramme_vuesource_r),
+        (imagimp->vue_export ? &imagimp->calques.histogramme_rendu_v : &imagimp->calques.histogramme_vuesource_v),
+        (imagimp->vue_export ? &imagimp->calques.histogramme_rendu_b : &imagimp->calques.histogramme_vuesource_b)
     };
     const float couleurs[4][3] = {
         {.8f, .8f, .8f},
@@ -324,12 +335,12 @@ static void dessinerConsole(Console *lc, float h, float img_l, float largeur_ecr
     if(lc->reponse_rouge)
         fixeCouleur(1.f, .2f, .0f);
     else
-        fixeCouleur(.0f, .7f, .4f);
+        fixeCouleur(.0f, 1.f, .1f);
     writeString(0.f, 1.f-h+y_offset, lc->reponse);
 
     fixeCouleur(.9f, .9f, .9f);
     if(!activee) {
-        writeString(0.f, 1.f-2.f*h+y_offset, "Entrer une commande avec [TAB].");
+        writeString(0.f, 1.f-2.f*h+y_offset, "Entrer une commande avec [TAB] ou ':'.");
         return;
     }
     fixeCouleur(.0f, .0f, .0f);
@@ -357,6 +368,8 @@ static void dessinerConsole(Console *lc, float h, float img_l, float largeur_ecr
         writeString(x, 1.f-(3+i)*h+y_offset, (char*) CONSOLE_CMDS[lc->cmd_suggerees[i]].details);
     }
     if(lc->tampon[0]) {
+        fixeCouleur(.6f, .6f, .6f);
+        writeString(0.f, 1.f-2.f*h+y_offset, lc->tampon_suggestion);
         fixeCouleur(.9f, .9f, .9f);
         writeString(0.f, 1.f-2.f*h+y_offset, lc->tampon);
     } else {

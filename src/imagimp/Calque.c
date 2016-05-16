@@ -94,6 +94,7 @@ void PileCalques_allouer(PileCalques *p, size_t l, size_t h) {
     ImageRVB_allouer(&p->virtuel, l, h);
     ImageRVB_allouer(&p->rendu, l, h);
     ImageRVB_allouer(&p->rendu_gl, l, h);
+    ImageRVB_allouer(&p->rendu_vuesource_gl, l, h);
     p->courant = Calque_nouveau(l, h);
 }
 void PileCalques_desallouerTout(PileCalques *p) {

@@ -36,11 +36,16 @@ typedef struct {
      */
     ImageRVB rendu;
     ImageRVB rendu_gl;
+    ImageRVB rendu_vuesource_gl;
     ImageRVB virtuel;
     Histogramme histogramme_rendu_rvb;
     Histogramme histogramme_rendu_r;
     Histogramme histogramme_rendu_v;
     Histogramme histogramme_rendu_b;
+    Histogramme histogramme_vuesource_rvb;
+    Histogramme histogramme_vuesource_r;
+    Histogramme histogramme_vuesource_v;
+    Histogramme histogramme_vuesource_b;
 } PileCalques;
 
 void Calque_recalculer(Calque *calque);
