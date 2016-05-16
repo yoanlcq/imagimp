@@ -9,7 +9,8 @@
 
 static void Imagimp_usage(const char *nom_prog) {
     fprintf(stderr, "Usage: %s <img.ppm>\n"
-                    "Sinon: %s :<largeur>x<hauteur>\n", 
+                    "Sinon: %s :<largeur>x<hauteur>\n"
+                    "Une taille de 512x512 est recommandée.\n", 
                     nom_prog, nom_prog);
 }
 
@@ -25,7 +26,10 @@ bool Imagimp_lancer(Imagimp *imagimp, int argc, char *argv[]) {
             Imagimp_usage(argv[0]);
             return false;
         }
-        ImageRVB_allouer(&chargee, l, h);
+        if(!ImageRVB_allouer(&chargee, l, h)) {
+            fputs("N'a pas pu allouer une image.", stderr);
+            return false;
+        }
         ImageRVB_remplirRVB(&chargee, 255, 255, 255);
     } else {
         if(!ImageRVB_importerPPM(&chargee, argv[1]))
@@ -44,7 +48,10 @@ bool Imagimp_lancer(Imagimp *imagimp, int argc, char *argv[]) {
     memset(&imagimp->console, 0, sizeof(Console));
     strncpy(imagimp->console.reponse, "VIMagimp | Lucas DUSSOUCHAUD - Yoan LECOQ | promo IMAC 2018", CONSOLE_MAX_REPONSE);
 
-    PileCalques_allouer(&imagimp->calques, l, h);
+    if(!PileCalques_allouer(&imagimp->calques, l, h)) {
+        fputs("N'a pas pu allouer la pile de calques.", stderr);
+        return false;
+    }
     ImageRVB_remplirEchiquier(&imagimp->calques.virtuel, 16, 64, 150);
     ImageRVB_desallouer(&imagimp->calques.courant->img_source);
     imagimp->calques.courant->img_source.rvb = chargee.rvb;
@@ -54,6 +61,21 @@ bool Imagimp_lancer(Imagimp *imagimp, int argc, char *argv[]) {
     initGLIMAGIMP_IHM(img.l, img.h, img.rvb, img.l+imagimp->largeur_ihm, img.h+2*imagimp->hauteur_lignecmd);
 #undef img
     return true;
+}
+
+/* On peut pas prendre un const Imagimp parce que actualiseImage() ne prend
+ * pas un tableau const. Shame. */
+void Imagimp_actualiserAffichageCanevas(Imagimp *imagimp) {
+    if(imagimp->vue_export)
+        actualiseImage(imagimp->calques.rendu_gl.rvb);
+    else {
+        ImageRVB_copierSymetrieVerticale(&imagimp->calques.rendu_vuesource_gl, &imagimp->calques.courant->img_source);
+        actualiseImage(imagimp->calques.rendu_vuesource_gl.rvb);
+        ImageRVB_histogrammeRVB(&imagimp->calques.courant->img_source, &imagimp->calques.histogramme_vuesource_rvb);
+        ImageRVB_histogrammeR  (&imagimp->calques.courant->img_source, &imagimp->calques.histogramme_vuesource_r);
+        ImageRVB_histogrammeV  (&imagimp->calques.courant->img_source, &imagimp->calques.histogramme_vuesource_v);
+        ImageRVB_histogrammeB  (&imagimp->calques.courant->img_source, &imagimp->calques.histogramme_vuesource_b);
+    }
 }
 
 void Imagimp_fonctionClavierTexte(Imagimp *imagimp, unsigned char ascii, int x, int y) {
@@ -77,23 +99,7 @@ void Imagimp_fonctionClavierTexte(Imagimp *imagimp, unsigned char ascii, int x, 
         break;
     }
 }
-/* On peut pas prendre un const Imagimp parce que actualiseImage() ne prend
- * pas un tableau const. Shame. */
-void Imagimp_actualiserAffichageCanevas(Imagimp *imagimp) {
-    if(imagimp->vue_export)
-        actualiseImage(imagimp->calques.rendu_gl.rvb);
-    else {
-        ImageRVB_copierSymetrieVerticale(&imagimp->calques.rendu_vuesource_gl, &imagimp->calques.courant->img_source);
-        actualiseImage(imagimp->calques.rendu_vuesource_gl.rvb);
-        ImageRVB_histogrammeRVB(&imagimp->calques.courant->img_source, &imagimp->calques.histogramme_vuesource_rvb);
-        ImageRVB_histogrammeR  (&imagimp->calques.courant->img_source, &imagimp->calques.histogramme_vuesource_r);
-        ImageRVB_histogrammeV  (&imagimp->calques.courant->img_source, &imagimp->calques.histogramme_vuesource_v);
-        ImageRVB_histogrammeB  (&imagimp->calques.courant->img_source, &imagimp->calques.histogramme_vuesource_b);
-    }
-}
 
-/* Attention, cette fonction est gardée pour des raisons d'héritage.
- * Voir Imagimp_fonctionClavierTexte() à la place. */
 void Imagimp_fonctionClavier(Imagimp *imagimp, unsigned char ascii, int x, int y) {
     /* printf("Touche : '%c' (souris: %d, %d)\n", ascii, x, y); */
     switch(ascii) {
@@ -102,137 +108,12 @@ void Imagimp_fonctionClavier(Imagimp *imagimp, unsigned char ascii, int x, int y
     case ':':
         Console_effacerEntree(&imagimp->console);
         imagimp->fonction_clavier = Imagimp_fonctionClavierTexte;
-        imagimp->fonction_clavier_special = Imagimp_fonctionClavierTexteSpecial;
         if(ascii!='\t' && ascii!=':')
             Imagimp_fonctionClavierTexte(imagimp, ascii, x, y);
         break;
-    /*
-    case 'i': 
-        Calque_recalculer(imagimp->calques.courant);
-        PileCalques_recalculer(&imagimp->calques);
-        Imagimp_actualiserAffichageCanevas(imagimp);
-        break;
-    case 'v':
-        break;
-    case 'q': 
-        PileCalques_desallouerTout(&imagimp->calques);
-        exit(EXIT_SUCCESS);
-        break;
-    case 'c':
-        break;
-    case 'x':
-        break;
-    case 'm':
-        if(imagimp->calques.courant->melange == Melange_normal)
-            imagimp->calques.courant->melange = Melange_addition;
-        else if(imagimp->calques.courant->melange == Melange_addition)
-            imagimp->calques.courant->melange = Melange_produit;
-        else if(imagimp->calques.courant->melange == Melange_produit)
-            imagimp->calques.courant->melange = Melange_normal;
-        Calque_recalculer(imagimp->calques.courant);
-        PileCalques_recalculer(&imagimp->calques);
-        Imagimp_actualiserAffichageCanevas(imagimp);
-        break;
-    case 'l':
-        ListeLUTs_ajouterDerniere(&imagimp->calques.courant->luts);
-        imagimp->calques.courant->luts.derniere->fonction = LUT_inversion;
-        imagimp->calques.courant->luts.derniere->param1 = 127;
-        Calque_recalculer(imagimp->calques.courant);
-        PileCalques_recalculer(&imagimp->calques);
-        Imagimp_actualiserAffichageCanevas(imagimp);
-        break;
-    case 't': 
-        if(!imagimp->calques.courant->luts.derniere)
-            break;
-#define TROP_LONG (imagimp->calques.courant->luts.derniere->fonction)
-             if(TROP_LONG == LUT_inversion)
-                TROP_LONG  = LUT_augmentationLuminosite;
-        else if(TROP_LONG == LUT_augmentationLuminosite)
-                TROP_LONG  = LUT_diminutionLuminosite;
-        else if(TROP_LONG == LUT_diminutionLuminosite)
-                TROP_LONG  = LUT_augmentationContraste;
-        else if(TROP_LONG == LUT_augmentationContraste)
-                TROP_LONG  = LUT_diminutionContraste;
-        else if(TROP_LONG == LUT_diminutionContraste)
-                TROP_LONG  = LUT_sepia;
-        else if(TROP_LONG == LUT_sepia)
-                TROP_LONG  = LUT_inversion;
-#undef TROP_LONG
-        Calque_recalculer(imagimp->calques.courant);
-        PileCalques_recalculer(&imagimp->calques);
-        Imagimp_actualiserAffichageCanevas(imagimp);
-        break;
-    case 'o': 
-        if(imagimp->calques.courant->luts.derniere->param1>0)
-            --(imagimp->calques.courant->luts.derniere->param1);
-        Calque_recalculer(imagimp->calques.courant);
-        PileCalques_recalculer(&imagimp->calques);
-        Imagimp_actualiserAffichageCanevas(imagimp);
-        break;
-    case 'p': 
-        if(imagimp->calques.courant->luts.derniere->param1<255)
-            ++(imagimp->calques.courant->luts.derniere->param1);
-        Calque_recalculer(imagimp->calques.courant);
-        PileCalques_recalculer(&imagimp->calques);
-        Imagimp_actualiserAffichageCanevas(imagimp);
-        break;
-    case 'L':
-        ListeLUTs_retirerDerniere(&imagimp->calques.courant->luts);
-        Calque_recalculer(imagimp->calques.courant);
-        PileCalques_recalculer(&imagimp->calques);
-        Imagimp_actualiserAffichageCanevas(imagimp);
-        break;
-    case 'a':
-        Calque_appliquerPremiereLUT(imagimp->calques.courant);
-        Calque_recalculer(imagimp->calques.courant);
-        PileCalques_recalculer(&imagimp->calques);
-        Imagimp_actualiserAffichageCanevas(imagimp);
-        break;
-    case 's': 
-        ImageRVB_exporterPPM(&imagimp->calques.rendu, "export.ppm");
-        break;
-        */
-    /* Les features suivantes ne sont plus requises : */
-    /* case 'h':*/ /* Imprimer l'historique dans le terminal */ 
-        /* L'historique conserve : 
-         * IM_1, CAL_1, CAL_3, CAL_4, CAL_5, LUT_1, LUT_3 
-         * Action annulables :
-         * CAL_1, CAL_3, CAL_4, LUT_1, LUT_3 */
-        /* break; */
-    /* case 'z':*/ /* Annuler *//* break; */
     }
 }
 
-void Imagimp_fonctionClavierTexteSpecial(Imagimp *imagimp, int touche, int x, int y) {
-    /*printf("Touche spéciale : %d (souris: %d, %d)\n", touche, x, y);*/
-    switch(touche) {
-    case GLUT_KEY_F1: break;
-    case GLUT_KEY_F2: break;
-    case GLUT_KEY_F3: break;
-    case GLUT_KEY_F4: break;
-    case GLUT_KEY_F5: break; 
-    case GLUT_KEY_F6: break;
-    case GLUT_KEY_F7: break;
-    case GLUT_KEY_F8: break;
-    case GLUT_KEY_F9: break;
-    case GLUT_KEY_F10: break;
-    case GLUT_KEY_F11: break;
-    case GLUT_KEY_F12: break;
-    case GLUT_KEY_LEFT: 
-        break;
-    case GLUT_KEY_RIGHT:
-        break;
-    case GLUT_KEY_UP: 
-        break;
-    case GLUT_KEY_DOWN: 
-        break;
-    case GLUT_KEY_PAGE_UP: break;
-    case GLUT_KEY_PAGE_DOWN: break;
-    case GLUT_KEY_HOME: break;
-    case GLUT_KEY_END: break;
-    case GLUT_KEY_INSERT: break;
-    }
-}
 void Imagimp_fonctionClavierSpecial(Imagimp *imagimp, int touche, int x, int y) {
     /*printf("Touche spéciale : %d (souris: %d, %d)\n", touche, x, y);*/
     switch(touche) {
@@ -249,34 +130,12 @@ void Imagimp_fonctionClavierSpecial(Imagimp *imagimp, int touche, int x, int y) 
     case GLUT_KEY_F11: break;
     case GLUT_KEY_F12: break;
     case GLUT_KEY_LEFT: 
-        /* (CAL_3) Opacité d'un calque */ 
-        imagimp->calques.courant->opacite -= .02f;
-        if(imagimp->calques.courant->opacite < 0.f)
-            imagimp->calques.courant->opacite = 0.f;
-        printf("Opacité : %u%%\n", (unsigned)(imagimp->calques.courant->opacite*100.f));
-        Calque_recalculer(imagimp->calques.courant);
-        PileCalques_recalculer(&imagimp->calques);
-        Imagimp_actualiserAffichageCanevas(imagimp);
         break;
     case GLUT_KEY_RIGHT:
-        /* (CAL_3) Opacité d'un calque */
-        imagimp->calques.courant->opacite += .02f;
-        if(imagimp->calques.courant->opacite > 1.f)
-            imagimp->calques.courant->opacite = 1.f;
-        printf("Opacité : %u%%\n", (unsigned)(imagimp->calques.courant->opacite*100.f));
-        Calque_recalculer(imagimp->calques.courant);
-        PileCalques_recalculer(&imagimp->calques);
-        Imagimp_actualiserAffichageCanevas(imagimp);
         break;
     case GLUT_KEY_UP: 
-        /* (CAL_2) Calque suivant */
-        if(imagimp->calques.courant->au_dessus)
-            imagimp->calques.courant = imagimp->calques.courant->au_dessus;
         break;
     case GLUT_KEY_DOWN: 
-        /* (CAL_2) Calque précédent */
-        if(imagimp->calques.courant->en_dessous)
-            imagimp->calques.courant = imagimp->calques.courant->en_dessous;
         break;
     case GLUT_KEY_PAGE_UP: break;
     case GLUT_KEY_PAGE_DOWN: break;

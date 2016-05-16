@@ -23,7 +23,6 @@ struct Imagimp {
 bool Imagimp_lancer(Imagimp *imagimp, int argc, char *argv[]);
 void Imagimp_actualiserAffichageCanevas(Imagimp *imagimp);
 void Imagimp_fonctionClavierTexte(Imagimp *imagimp, unsigned char ascii, int x, int y);
-void Imagimp_fonctionClavierTexteSpecial(Imagimp *imagimp, int touche, int x, int y);
 void Imagimp_fonctionClavier(Imagimp *imagimp, unsigned char ascii, int x, int y);
 void Imagimp_fonctionClavierSpecial(Imagimp *imagimp, int touche, int x, int y);
 void Imagimp_fonctionSouris(Imagimp *imagimp, int bouton, int appuye, int x, int y);

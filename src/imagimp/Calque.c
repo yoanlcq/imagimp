@@ -64,19 +64,17 @@ void Calque_recalculer(Calque *calque) {
     for(lut=calque->luts.premiere ; lut ; lut=lut->suivante)
         appliquerLUT(img, lut);
 }
+
 void Calque_appliquerPremiereLUT(Calque *calque) {
-    LUT* lut = calque->luts.premiere;
-    appliquerLUT(&calque->img_source, lut);
-    calque->luts.premiere = lut->suivante;
-    free(lut);
+    appliquerLUT(&calque->img_source, calque->luts.premiere);
+    ListeLUTs_retirerPremiere(&calque->luts);
 }
 static Calque* Calque_nouveau(size_t l, size_t h) {
     Calque *c = malloc(sizeof(Calque));
-    if(!c)
-        return NULL;
-    ImageRVB_allouer(&c->img_source, l, h);
-    ImageRVB_allouer(&c->img_calculee, l, h);
-    ListeLUTs_allouer(&c->luts);
+    if(!c) return NULL;
+    if(!ImageRVB_allouer(&c->img_source, l, h)) return NULL;
+    if(!ImageRVB_allouer(&c->img_calculee, l, h)) return NULL;
+    if(!ListeLUTs_allouer(&c->luts)) return NULL;
     c->melange = Melange_normal;
     c->opacite = 1.f;
     c->en_dessous = c->au_dessus = NULL;
@@ -90,12 +88,14 @@ static void Calque_detruire(Calque *c) {
     ListeLUTs_desallouer(&c->luts);
     free(c);
 }
-void PileCalques_allouer(PileCalques *p, size_t l, size_t h) {
-    ImageRVB_allouer(&p->virtuel, l, h);
-    ImageRVB_allouer(&p->rendu, l, h);
-    ImageRVB_allouer(&p->rendu_gl, l, h);
-    ImageRVB_allouer(&p->rendu_vuesource_gl, l, h);
+bool PileCalques_allouer(PileCalques *p, size_t l, size_t h) {
+    if(!ImageRVB_allouer(&p->virtuel, l, h)) return false;
+    if(!ImageRVB_allouer(&p->rendu, l, h)) return false;
+    if(!ImageRVB_allouer(&p->rendu_gl, l, h)) return false;
+    if(!ImageRVB_allouer(&p->rendu_vuesource_gl, l, h)) return false;
     p->courant = Calque_nouveau(l, h);
+    if(!p->courant) return false;
+    return true;
 }
 void PileCalques_desallouerTout(PileCalques *p) {
     ImageRVB_desallouer(&p->rendu);
@@ -127,14 +127,16 @@ void PileCalques_recalculer(PileCalques *p) {
     ImageRVB_histogrammeV  (&p->rendu, &p->histogramme_rendu_v);
     ImageRVB_histogrammeB  (&p->rendu, &p->histogramme_rendu_b);
 }
-void PileCalques_ajouterCalqueVierge(PileCalques *p) {
+bool PileCalques_ajouterCalqueVierge(PileCalques *p) {
     Calque *ancien = p->courant->au_dessus;
     Calque *nouveau = Calque_nouveau(p->rendu.l, p->rendu.h);
+    if(!nouveau) return false;
     p->courant->au_dessus = nouveau;
     nouveau->en_dessous = p->courant;
     nouveau->au_dessus = ancien;
     if(ancien) ancien->en_dessous = nouveau;
     p->courant = nouveau;
+    return true;
 }
 void PileCalques_supprimerCalqueCourant(PileCalques *p) {
     Calque *dessus = p->courant->au_dessus;

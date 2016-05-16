@@ -33,6 +33,7 @@ bool ListeLUTs_allouer(ListeLUTs *liste);
 void ListeLUTs_desallouer(ListeLUTs *liste);
 bool ListeLUTs_ajouterDerniere(ListeLUTs *liste);
 void ListeLUTs_retirerDerniere(ListeLUTs *liste);
+void ListeLUTs_retirerPremiere(ListeLUTs *liste);
 
 void LUT_inversion(LUT *lut);
 void LUT_augmentationLuminosite(LUT *lut);
@@ -40,5 +41,11 @@ void LUT_diminutionLuminosite(LUT *lut);
 void LUT_augmentationContraste(LUT *lut);
 void LUT_diminutionContraste(LUT *lut);
 void LUT_sepia(LUT *lut);
+void LUT_augmentationR(LUT *lut);
+void LUT_augmentationV(LUT *lut);
+void LUT_augmentationB(LUT *lut);
+void LUT_diminutionR(LUT *lut);
+void LUT_diminutionV(LUT *lut);
+void LUT_diminutionB(LUT *lut);
 
 #endif /* LUT_H */

@@ -28,7 +28,11 @@ static void recalculerCalquePuisPilePuisAfficher(Imagimp *imagimp) {
     Imagimp_actualiserAffichageCanevas(imagimp);
 }
 static void cmd_cn(Imagimp *imagimp, int argc, const char * const *argv) {
-    PileCalques_ajouterCalqueVierge(&imagimp->calques);
+    if(!PileCalques_ajouterCalqueVierge(&imagimp->calques)) {
+        strncpy(imagimp->console.reponse, "N'a pas pu allouer un nouveau calque.", CONSOLE_MAX_REPONSE);
+        imagimp->console.reponse_rouge = true;
+        return;
+    }
     recalculerCalquePuisPilePuisAfficher(imagimp);
     strncpy(imagimp->console.reponse,
             "Voici un nouveau calque. "
@@ -41,7 +45,26 @@ static void cmd_cs(Imagimp *imagimp, int argc, const char * const *argv) {
     Imagimp_actualiserAffichageCanevas(imagimp);
     imagimp->console.reponse[0] = '\0';
 }
-static void cmd_cc(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
+static void cmd_cc(Imagimp *imagimp, int argc, const char * const *argv) {
+    if(argc <= 1) {
+        strncpy(imagimp->console.reponse, "Une valeur d'ecart est requise.", CONSOLE_MAX_REPONSE);
+        imagimp->console.reponse_rouge = true;
+        return;
+    }
+    int ecart = strtol(argv[1], NULL, 0);
+    Calque *old = imagimp->calques.courant;
+    if(ecart > 0) {
+        for( ; imagimp->calques.courant->au_dessus && ecart > 0 ; --ecart)
+            imagimp->calques.courant = imagimp->calques.courant->au_dessus;
+    } else if(ecart < 0) {
+        for( ; imagimp->calques.courant->en_dessous && ecart < 0 ; ++ecart)
+            imagimp->calques.courant = imagimp->calques.courant->en_dessous;
+    }
+    if(!imagimp->vue_export)
+        Imagimp_actualiserAffichageCanevas(imagimp);
+        snprintf(imagimp->console.reponse, CONSOLE_MAX_REPONSE, "le calque courant %s change.",
+                imagimp->calques.courant != old ? "a" : "n'a pas");
+}
 static void cmd_co(Imagimp *imagimp, int argc, const char * const *argv) {
     if(argc <= 1) {
         strncpy(imagimp->console.reponse, "La valeur d'opacite est requise.", CONSOLE_MAX_REPONSE);
@@ -74,7 +97,7 @@ static void cmd_cmm(Imagimp *imagimp, int argc, const char * const *argv) {
 static void cmd_cd(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
 static void cmd_crc(Imagimp *imagimp, int argc, const char * const *argv) {
     if(argc <= 3) {
-        strncpy(imagimp->console.reponse, "Une valeur rouge, vert et bleu sont requises.", CONSOLE_MAX_REPONSE);
+        strncpy(imagimp->console.reponse, "Trois valeurs : rouge, vert et bleu, sont requises.", CONSOLE_MAX_REPONSE);
         imagimp->console.reponse_rouge = true;
         return;
     }
@@ -103,21 +126,53 @@ static void cmd_cri(Imagimp *imagimp, int argc, const char * const *argv) {
     recalculerCalquePuisPilePuisAfficher(imagimp);
     imagimp->console.reponse[0] = '\0';
 }
-static void cmd_clni(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
-static void cmd_clns(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
-static void cmd_clnal(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
-static void cmd_clndl(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
-static void cmd_clnac(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
-static void cmd_clndc(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
-static void cmd_clnar(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
-static void cmd_clnav(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
-static void cmd_clnab(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
-static void cmd_clndr(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
-static void cmd_clndv(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
-static void cmd_clndb(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
-static void cmd_clap(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
-static void cmd_clsd(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
-static void cmd_clp(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
+static void cmd_cln_helper(Imagimp *imagimp, int argc, const char *const* argv, void (*lut_func)(LUT *lut)) {
+    if(!ListeLUTs_ajouterDerniere(&imagimp->calques.courant->luts)) {
+        strncpy(imagimp->console.reponse, "N'a pas pu allouer une LUT.", CONSOLE_MAX_REPONSE);
+        imagimp->console.reponse_rouge = true;
+        return;
+    }
+    LUT *lut = imagimp->calques.courant->luts.derniere;
+    lut->fonction = lut_func;
+    lut->fonction(lut);
+    recalculerCalquePuisPilePuisAfficher(imagimp);
+    strncpy(imagimp->console.reponse, "Changez le parametre de votre LUT avec 'clp'.", CONSOLE_MAX_REPONSE);
+}
+static void cmd_clni(Imagimp *imagimp, int argc, const char * const *argv) {  cmd_cln_helper(imagimp, argc, argv, LUT_inversion); }
+static void cmd_clns(Imagimp *imagimp, int argc, const char * const *argv) {  cmd_cln_helper(imagimp, argc, argv, LUT_sepia); }
+static void cmd_clnal(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_augmentationLuminosite); }
+static void cmd_clndl(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_diminutionLuminosite); }
+static void cmd_clnac(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_augmentationContraste); }
+static void cmd_clndc(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_diminutionContraste); }
+static void cmd_clnar(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_augmentationR); }
+static void cmd_clnav(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_augmentationV); }
+static void cmd_clnab(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_augmentationB); }
+static void cmd_clndr(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_diminutionR); }
+static void cmd_clndv(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_diminutionV); }
+static void cmd_clndb(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_diminutionB); }
+static void cmd_clap(Imagimp *imagimp, int argc, const char * const *argv) { 
+    Calque_appliquerPremiereLUT(imagimp->calques.courant);
+    recalculerCalquePuisPilePuisAfficher(imagimp);
+    strncpy(imagimp->console.reponse, "LUT appliquee.", CONSOLE_MAX_REPONSE);
+}
+static void cmd_clsd(Imagimp *imagimp, int argc, const char * const *argv) { 
+    ListeLUTs_retirerDerniere(&imagimp->calques.courant->luts);
+    recalculerCalquePuisPilePuisAfficher(imagimp);
+    strncpy(imagimp->console.reponse, "La derniere LUT a ete supprimee.", CONSOLE_MAX_REPONSE);
+}
+static void cmd_clp(Imagimp *imagimp, int argc, const char * const *argv) {
+    if(argc <= 1) {
+        strncpy(imagimp->console.reponse, "Une valeur est requise.", CONSOLE_MAX_REPONSE);
+        imagimp->console.reponse_rouge = true;
+        return;
+    }
+    LUT *lut = imagimp->calques.courant->luts.derniere;
+    lut->param1 = strtoul(argv[1], NULL, 0);
+    lut->fonction(lut);
+    recalculerCalquePuisPilePuisAfficher(imagimp);
+    imagimp->console.reponse[0] = '\0';
+
+}
 static void cmd_v(Imagimp *imagimp, int argc, const char * const *argv) { 
     imagimp->vue_export = !imagimp->vue_export;
     Imagimp_actualiserAffichageCanevas(imagimp);
@@ -144,8 +199,8 @@ static void cmd_e(Imagimp *imagimp, int argc, const char * const *argv) {
 const ConsoleCmd CONSOLE_CMDS[CONSOLE_MAX_CMDS] = {
 { cmd_cn,    {"cn"   , "CAL_1"},            "Calque, Nouveau", ""},
 { cmd_cs,    {"cs"   , "CAL_5"},            "Calque, Supprimer", ""},
-{ cmd_cc,    {"cc"   , "CAL_2"},            "Calque, Changer (Clavier : fleches haut et bas)", "<ecart>"},
-{ cmd_co,    {"co"   , "CAL_3"},            "Calque, Opacite (Clavier : fleches gauche et droite)", "[0;100]"},
+{ cmd_cc,    {"cc"   , "CAL_2"},            "Calque, Changer", "<ecart>"},
+{ cmd_co,    {"co"   , "CAL_3"},            "Calque, Opacite", "[0;100]"},
 { cmd_cmn,   {"cmn"  , "CAL_4_NORMAL"},     "Calque, Melange Normal", ""},
 { cmd_cma,   {"cma"  , "CAL_4_ADD"},        "Calque, Melange Addition", ""},
 { cmd_cmm,   {"cmm"  , "CAL_4_MUL"},        "Calque, Melange Multiplication", ""},
@@ -166,7 +221,7 @@ const ConsoleCmd CONSOLE_CMDS[CONSOLE_MAX_CMDS] = {
 { cmd_clndb, {"clndb", "LUT_1_EXT_DIMB"},   "Calque, LUT, Nouvelle, Diminution Bleu", ""},
 { cmd_clap,  {"clap" , "LUT_2"},            "Calque, LUT, Appliquer la Premiere", ""},
 { cmd_clsd,  {"clsd" , "LUT_3"},            "Calque, LUT, Supprimer la Derniere", ""},
-{ cmd_clp,   {"clp"  , "LUT_EXT_PARAMS"},   "Calque, LUT, Parametres (Clavier : '<' et '>')", ""},
+{ cmd_clp,   {"clp"  , "LUT_EXT_PARAMS"},   "Calque, LUT, Parametres", "[0:255]"},
 { cmd_v,     {"v"    , "IHM_1"},            "Vue (cycle entre 'export' et 'image source du calque')", ""},
 { cmd_eh,    {"eh"   , "IM_EXT_HISTG"},     "Exporter Histogrammes (PPM)", "export/histogrammes.ppm"},
 { cmd_e,     {"e"    , "IM_2"},             "Exporter (PPM)", "export/sans_titre.ppm"},

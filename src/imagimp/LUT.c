@@ -1,14 +1,55 @@
-#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <stdint.h>
 #include "LUT.h"
 
 bool ListeLUTs_allouer(ListeLUTs *liste) {
     liste->premiere = liste->derniere = NULL;
-    return false;
+    return true;
 }
-void ListeLUTs_desallouer(ListeLUTs *liste) {}
-bool ListeLUTs_ajouterDerniere(ListeLUTs *liste) { return false; }
-void ListeLUTs_retirerDerniere(ListeLUTs *liste) {}
+void ListeLUTs_desallouer(ListeLUTs *liste) {
+    if(!liste->premiere)
+        return;
+    LUT *cur;
+    for(cur=liste->premiere ; cur!=liste->derniere ; cur=cur->suivante)
+        free(cur);
+    free(cur);
+}
+bool ListeLUTs_ajouterDerniere(ListeLUTs *liste) { 
+    LUT *nouvelle = calloc(1, sizeof(LUT));
+    if(!nouvelle) {
+        fputs("N'a pas pu allouer une LUT.", stderr);
+        return false;
+    }
+    if(liste->derniere) {
+        nouvelle->precedente = liste->derniere;
+        liste->derniere->suivante = nouvelle;
+        liste->derniere = nouvelle;
+    } else
+        liste->premiere = liste->derniere = nouvelle;
+
+    liste->derniere->fonction = LUT_inversion;
+    liste->derniere->param1 = 127;
+    return true; 
+}
+void ListeLUTs_retirerDerniere(ListeLUTs *liste) {
+    if(!liste->derniere)
+        return;
+    LUT *prec = liste->derniere->precedente;
+    free(liste->derniere);
+    liste->derniere = prec;
+    if(liste->derniere)
+        liste->derniere->suivante = NULL;
+    else
+        liste->derniere = liste->premiere = NULL;
+}
+void ListeLUTs_retirerPremiere(ListeLUTs *liste) {
+    LUT *old = liste->premiere;
+    liste->premiere = liste->premiere->suivante;
+    if(!liste->premiere)
+        liste->derniere = NULL;
+    free(old);
+}
 
 /* https://github.com/yoanlcq/imagimp/wiki/Comprendre-les-LUTs */
 
@@ -23,7 +64,7 @@ void LUT_diminutionContraste(LUT *lut) {}
 void LUT_inversion(LUT *lut) {
     size_t i, inv; /* Ne surtout pas les mettre comme uint8_t ici, sinon
                       la boucle va tourner indéfiniment. (i ne pourrait jamais 
-                      valoir 256 car il n'y auarit pas assez de bits.) */
+                      valoir 256 car il n'y aurait pas assez de bits.) */
     for(i=0, inv=255 ; i<256 ; ++i, --inv)
         lut->r[i] = lut->v[i] = lut->b[i] = inv;
 }
@@ -294,3 +335,10 @@ void LUT_sepia(LUT *lut) {
         lut->b[i] = sepia[3*i+2];
     }
 }
+void LUT_augmentationR(LUT *lut) {}
+void LUT_augmentationV(LUT *lut) {}
+void LUT_augmentationB(LUT *lut) {}
+void LUT_diminutionR(LUT *lut) {}
+void LUT_diminutionV(LUT *lut) {}
+void LUT_diminutionB(LUT *lut) {}
+
