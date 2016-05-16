@@ -121,6 +121,10 @@ void PileCalques_recalculer(PileCalques *p) {
     for( ; cur ; cur=cur->au_dessus)
         cur->melange(&rendu, &rendu, cur);
     ImageRVB_copierSymetrieVerticale(&p->rendu_gl, &p->rendu);
+    ImageRVB_histogrammeRVB(&p->rendu, &p->histogramme_rendu_rvb);
+    ImageRVB_histogrammeR  (&p->rendu, &p->histogramme_rendu_r);
+    ImageRVB_histogrammeV  (&p->rendu, &p->histogramme_rendu_v);
+    ImageRVB_histogrammeB  (&p->rendu, &p->histogramme_rendu_b);
 }
 void PileCalques_ajouterCalqueVierge(PileCalques *p) {
     Calque *ancien = p->courant->au_dessus;

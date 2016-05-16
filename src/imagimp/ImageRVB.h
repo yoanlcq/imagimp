@@ -10,7 +10,10 @@ struct ImageRVB {
 };
 typedef struct ImageRVB ImageRVB;
 
-typedef uint32_t Histogramme[256];
+struct Histogramme {
+    uint32_t donnees[256], min, max;
+};
+typedef struct Histogramme Histogramme;
 
 static uint8_t ImageRVB_faux_pixel[3];
 #include <string.h>
@@ -51,9 +54,9 @@ void ImageRVB_copierSymetrieVerticale(ImageRVB * restrict dst, const ImageRVB * 
 bool ImageRVB_importerPPM(ImageRVB *img, const char *nom_fichier);
 bool ImageRVB_exporterPPM(const ImageRVB *img, const char *nom_fichier);
 
-void ImageRVB_histogrammeRVB(const ImageRVB *img, Histogramme histogramme);
-void ImageRVB_histogrammeR  (const ImageRVB *img, Histogramme histogramme);
-void ImageRVB_histogrammeV  (const ImageRVB *img, Histogramme histogramme);
-void ImageRVB_histogrammeB  (const ImageRVB *img, Histogramme histogramme);
+void ImageRVB_histogrammeRVB(const ImageRVB *img, Histogramme *histogramme);
+void ImageRVB_histogrammeR  (const ImageRVB *img, Histogramme *histogramme);
+void ImageRVB_histogrammeV  (const ImageRVB *img, Histogramme *histogramme);
+void ImageRVB_histogrammeB  (const ImageRVB *img, Histogramme *histogramme);
 
 #endif /* IMAGERVB_H */

@@ -133,7 +133,17 @@ void ImageRVB_copierSymetrieVerticale(ImageRVB * restrict dst, const ImageRVB * 
     }
 }
 
-void ImageRVB_histogrammeRVB(const ImageRVB *img, Histogramme histogramme) {
+static void Histogramme_recalculerMinMax(Histogramme *h) {
+    size_t i;
+    for(h->min=UINT32_MAX, h->max=0, i=0 ; i<256 ; ++i) {
+        if(h->donnees[i] > h->max)
+            h->max = h->donnees[i];
+        if(h->donnees[i] < h->min)
+            h->min = h->donnees[i];
+    }
+}
+
+void ImageRVB_histogrammeRVB(const ImageRVB *img, Histogramme *histogramme) {
     size_t x, y, somme;
     memset(histogramme, 0, sizeof(Histogramme));
     for(y=0 ; y<img->h ; ++y) {
@@ -141,16 +151,18 @@ void ImageRVB_histogrammeRVB(const ImageRVB *img, Histogramme histogramme) {
             somme = *ImageRVB_pixelR(img, x, y)
                   + *ImageRVB_pixelV(img, x, y)
                   + *ImageRVB_pixelB(img, x, y);
-            ++histogramme[(uint8_t)(somme/3)];
+            ++(histogramme->donnees[(uint8_t)(somme/3)]);
         }
     }
+    Histogramme_recalculerMinMax(histogramme);
 }
 #define IMAGERVB_HISTOGRAMME_CANAL(C) \
-void ImageRVB_histogramme##C(const ImageRVB *img, Histogramme histogramme) { \
+void ImageRVB_histogramme##C(const ImageRVB *img, Histogramme *histogramme) { \
     size_t x, y; \
     memset(histogramme, 0, sizeof(Histogramme)); \
     for(y=0 ; y<img->h ; ++y) for(x=0 ; x<img->l ; ++x) \
-        ++histogramme[*ImageRVB_pixel##C(img, x, y)]; \
+        ++(histogramme->donnees[*ImageRVB_pixel##C(img, x, y)]); \
+    Histogramme_recalculerMinMax(histogramme); \
 }
 IMAGERVB_HISTOGRAMME_CANAL(R)
 IMAGERVB_HISTOGRAMME_CANAL(V)
