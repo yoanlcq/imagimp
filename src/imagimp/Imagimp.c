@@ -10,7 +10,7 @@
 
 static void Imagimp_usage(const char *nom_prog) {
     fprintf(stderr, "\n--- Usages possibles ---\n\n"
-                    "Lancer avec une image :\n    %s <img.ppm> [<commande>[:<param1>]*]*\n"
+                    "Lancer avec une image PPM :\n    %s <img.ppm> [<commande>[:<param1>]*]*\n"
                     "Lancer sans image :\n    %s :<largeur>x<hauteur> [<commande>[:<param1>]*]*\n\n"
                     "Dans tous les cas, la taille du canevas est fixée par le premier argument.\n"
                     "Une taille de 512x512 est recommandée.\n"
