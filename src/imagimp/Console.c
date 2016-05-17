@@ -96,6 +96,9 @@ static void cmd_cma(Imagimp *imagimp, int argc, const char * const *argv) {
 static void cmd_cmm(Imagimp *imagimp, int argc, const char * const *argv) {
     cmd_cm_helper(imagimp, argc, argv, Melange_multiplication);
 }
+static void cmd_cme(Imagimp *imagimp, int argc, const char * const *argv) {
+    cmd_cm_helper(imagimp, argc, argv, Melange_ecran);
+}
 static void cmd_crc(Imagimp *imagimp, int argc, const char * const *argv) {
     if(argc <= 3) {
         strncpy(imagimp->console.reponse, "Trois valeurs : rouge, vert et bleu, sont requises.", CONSOLE_MAX_REPONSE);
@@ -210,6 +213,7 @@ const ConsoleCmd CONSOLE_CMDS[CONSOLE_MAX_CMDS] = {
 { cmd_cmn,    {"cmn"   , "CAL_4_NORMAL"},    "Calque, Melange Normal", ""},
 { cmd_cma,    {"cma"   , "CAL_4_ADD"},       "Calque, Melange Addition", ""},
 { cmd_cmm,    {"cmm"   , "CAL_4_MUL"},       "Calque, Melange Multiplication", ""},
+{ cmd_cme,    {"cme"   , "CAL_4_ECRAN"},     "Calque, Melange \"Ecran\"", ""},
 { cmd_crc,    {"crc"   , "CAL_EXT_COULEUR"}, "Calque, Remplir par une Couleur", "[0;255] [0;255] [0;255]"},
 { cmd_cri,    {"cri"   , "IM_1"},            "Calque, Remplir par une Image PPM", "images/Phoenix.512.ppm"},
 { cmd_clni,   {"clni"  , "INVERT"},          "Calque, LUT, Nouvelle, Inversion", ""},

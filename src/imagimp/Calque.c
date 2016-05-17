@@ -14,6 +14,7 @@
 #define SRC_A (dessus->opacite)
 #define DST_A (dessous->opacite)
 #define MIN(a,b) ((a)<(b) ? (a) : (b))
+#define MAX(a,b) ((a)>(b) ? (a) : (b))
 void Melange_normal    (Calque *resultat, const Calque *dessous, const Calque *dessus) {
     /* Voir https://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending */
     OUT_A = SRC_A + DST_A*(1.f-SRC_A);
@@ -37,12 +38,22 @@ void Melange_multiplication   (Calque *resultat, const Calque *dessous, const Ca
         OUT(R) = DST(R) + SRC_A*(255.f*(SRC(R)/255.f)*(DST(R)/255.f) - DST(R));
         OUT(V) = DST(V) + SRC_A*(255.f*(SRC(V)/255.f)*(DST(V)/255.f) - DST(V));
         OUT(B) = DST(B) + SRC_A*(255.f*(SRC(B)/255.f)*(DST(B)/255.f) - DST(B));
-        /* Ca, c'est la formule de l'énoncé, mais en fait ça ressemble
-         * plus au mode "normal" qu'au mode "multiplier".
+    }
+}
+void Melange_multiplicationEnonce   (Calque *resultat, const Calque *dessous, const Calque *dessus) {
+    OUT_A = SRC_A + DST_A*(1.f-SRC_A);
+    FOR_EACH_PIXEL() {
         OUT(R) = SRC_A*SRC(R) + (1.f-SRC_A)*DST(R);
         OUT(V) = SRC_A*SRC(V) + (1.f-SRC_A)*DST(V);
         OUT(B) = SRC_A*SRC(B) + (1.f-SRC_A)*DST(B);
-        */
+    }
+}
+void Melange_ecran   (Calque *resultat, const Calque *dessous, const Calque *dessus) {
+    OUT_A = SRC_A + DST_A*(1.f-SRC_A);
+    FOR_EACH_PIXEL() {
+        OUT(R) = MAX(0, 255-(255-DST(R))*(255-SRC(R)));
+        OUT(V) = MAX(0, 255-(255-DST(V))*(255-SRC(V)));
+        OUT(B) = MAX(0, 255-(255-DST(B))*(255-SRC(B)));
     }
 }
 #undef FOR_EACH_PIXEL
@@ -53,6 +64,7 @@ void Melange_multiplication   (Calque *resultat, const Calque *dessous, const Ca
 #undef SRC_A
 #undef DST_A
 #undef MIN
+#undef MAX
 
 static void appliquerLUT(ImageRVB *img, const LUT *lut) {
     size_t y, x;
