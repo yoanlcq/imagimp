@@ -31,13 +31,18 @@ void Melange_addition  (Calque *resultat, const Calque *dessous, const Calque *d
         OUT(B) = MAX(255, SRC(B)*SRC_A + DST(B));
     }
 }
-void Melange_produit   (Calque *resultat, const Calque *dessous, const Calque *dessus) {
+void Melange_multiplication   (Calque *resultat, const Calque *dessous, const Calque *dessus) {
     OUT_A = SRC_A + DST_A*(1.f-SRC_A);
     FOR_EACH_PIXEL() {
-        /* OUT(R) = DST(R) + SRC_A*(255.f*(SRC(R)/255.f)*(DST(R)/255.f) - DST(R)); */
+        OUT(R) = DST(R) + SRC_A*(255.f*(SRC(R)/255.f)*(DST(R)/255.f) - DST(R));
+        OUT(V) = DST(V) + SRC_A*(255.f*(SRC(V)/255.f)*(DST(V)/255.f) - DST(V));
+        OUT(B) = DST(B) + SRC_A*(255.f*(SRC(B)/255.f)*(DST(B)/255.f) - DST(B));
+        /* Ca, c'est la formule de l'énoncé, mais en fait ça ressemble
+         * plus au mode "normal" qu'au mode "multiplier".
         OUT(R) = SRC_A*SRC(R) + (1.f-SRC_A)*DST(R);
         OUT(V) = SRC_A*SRC(V) + (1.f-SRC_A)*DST(V);
         OUT(B) = SRC_A*SRC(B) + (1.f-SRC_A)*DST(B);
+        */
     }
 }
 #undef FOR_EACH_PIXEL

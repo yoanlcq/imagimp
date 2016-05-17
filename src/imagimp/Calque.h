@@ -11,7 +11,7 @@ typedef struct Calque Calque;
 typedef void (*FonctionMelange)(Calque *resultat, const Calque *dessous, const Calque *dessus);
 void Melange_normal    (Calque *resultat, const Calque *dessous, const Calque *dessus);
 void Melange_addition  (Calque *resultat, const Calque *dessous, const Calque *dessus);
-void Melange_produit   (Calque *resultat, const Calque *dessous, const Calque *dessus);
+void Melange_multiplication   (Calque *resultat, const Calque *dessous, const Calque *dessus);
 
 struct Calque {
     ImageRVB img_source, img_calculee;

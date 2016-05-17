@@ -90,7 +90,7 @@ static void cmd_cma(Imagimp *imagimp, int argc, const char * const *argv) {
     imagimp->console.reponse[0] = '\0';
 }
 static void cmd_cmm(Imagimp *imagimp, int argc, const char * const *argv) {
-    imagimp->calques.courant->melange = Melange_produit;
+    imagimp->calques.courant->melange = Melange_multiplication;
     recalculerCalquePuisPilePuisAfficher(imagimp);
     imagimp->console.reponse[0] = '\0';
 }
