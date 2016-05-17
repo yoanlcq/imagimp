@@ -81,20 +81,20 @@ static void cmd_co(Imagimp *imagimp, int argc, const char * const *argv) {
     recalculerCalquePuisPilePuisAfficher(imagimp);
     snprintf(imagimp->console.reponse, CONSOLE_MAX_REPONSE, "Opacite : %.2f%%", alpha*100.f);
 }
-static void cmd_cmn(Imagimp *imagimp, int argc, const char * const *argv) {
-    imagimp->calques.courant->melange = Melange_normal;
+static void cmd_cm_helper(Imagimp *imagimp, int argc, const char *const* argv,
+                         FonctionMelange melange) {
+    imagimp->calques.courant->melange = melange;
     recalculerCalquePuisPilePuisAfficher(imagimp);
     imagimp->console.reponse[0] = '\0';
+}
+static void cmd_cmn(Imagimp *imagimp, int argc, const char * const *argv) {
+    cmd_cm_helper(imagimp, argc, argv, Melange_normal);
 }
 static void cmd_cma(Imagimp *imagimp, int argc, const char * const *argv) {
-    imagimp->calques.courant->melange = Melange_addition;
-    recalculerCalquePuisPilePuisAfficher(imagimp);
-    imagimp->console.reponse[0] = '\0';
+    cmd_cm_helper(imagimp, argc, argv, Melange_addition);
 }
 static void cmd_cmm(Imagimp *imagimp, int argc, const char * const *argv) {
-    imagimp->calques.courant->melange = Melange_multiplication;
-    recalculerCalquePuisPilePuisAfficher(imagimp);
-    imagimp->console.reponse[0] = '\0';
+    cmd_cm_helper(imagimp, argc, argv, Melange_multiplication);
 }
 static void cmd_crc(Imagimp *imagimp, int argc, const char * const *argv) {
     if(argc <= 3) {
