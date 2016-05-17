@@ -47,5 +47,10 @@ void LUT_augmentationB(LUT *lut);
 void LUT_diminutionR(LUT *lut);
 void LUT_diminutionV(LUT *lut);
 void LUT_diminutionB(LUT *lut);
+void LUT_exp(LUT *lut);
+void LUT_ln(LUT *lut);
+void LUT_gamma(LUT *lut);
+void LUT_cos(LUT *lut);
+void LUT_sin(LUT *lut);
 
 #endif /* LUT_H */

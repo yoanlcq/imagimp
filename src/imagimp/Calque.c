@@ -13,7 +13,7 @@
 #define OUT_A (resultat->opacite)
 #define SRC_A (dessus->opacite)
 #define DST_A (dessous->opacite)
-#define MAX(a,b) ((a)>(b) ? (a) : (b))
+#define MIN(a,b) ((a)<(b) ? (a) : (b))
 void Melange_normal    (Calque *resultat, const Calque *dessous, const Calque *dessus) {
     /* Voir https://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending */
     OUT_A = SRC_A + DST_A*(1.f-SRC_A);
@@ -26,9 +26,9 @@ void Melange_normal    (Calque *resultat, const Calque *dessous, const Calque *d
 void Melange_addition  (Calque *resultat, const Calque *dessous, const Calque *dessus) {
     OUT_A = SRC_A + DST_A*(1.f-SRC_A);
     FOR_EACH_PIXEL() {
-        OUT(R) = MAX(255, SRC(R)*SRC_A + DST(R));
-        OUT(V) = MAX(255, SRC(V)*SRC_A + DST(V));
-        OUT(B) = MAX(255, SRC(B)*SRC_A + DST(B));
+        OUT(R) = MIN(255, SRC(R)*SRC_A + DST(R));
+        OUT(V) = MIN(255, SRC(V)*SRC_A + DST(V));
+        OUT(B) = MIN(255, SRC(B)*SRC_A + DST(B));
     }
 }
 void Melange_multiplication   (Calque *resultat, const Calque *dessous, const Calque *dessus) {
@@ -52,7 +52,7 @@ void Melange_multiplication   (Calque *resultat, const Calque *dessous, const Ca
 #undef OUT_A
 #undef SRC_A
 #undef DST_A
-#undef MAX
+#undef MIN
 
 static void appliquerLUT(ImageRVB *img, const LUT *lut) {
     size_t y, x;
@@ -64,7 +64,7 @@ static void appliquerLUT(ImageRVB *img, const LUT *lut) {
 }
 void Calque_recalculer(Calque *calque) {
     ImageRVB *img = &calque->img_calculee;
-    memcpy(img->rvb, calque->img_source.rvb, 3*calque->img_source.l*calque->img_source.h);
+    ImageRVB_copier(img, &calque->img_source);
     LUT* lut;
     for(lut=calque->luts.premiere ; lut ; lut=lut->suivante)
         appliquerLUT(img, lut);
@@ -83,7 +83,7 @@ static Calque* Calque_nouveau(size_t l, size_t h) {
     c->melange = Melange_normal;
     c->opacite = 1.f;
     c->en_dessous = c->au_dessus = NULL;
-    ImageRVB_remplirDegradeDebile(&c->img_source);
+    ImageRVB_remplirRVB(&c->img_source, 255, 255, 255);
     Calque_recalculer(c);
     return c;
 }
@@ -116,7 +116,7 @@ void PileCalques_desallouerTout(PileCalques *p) {
 }
 void PileCalques_recalculer(PileCalques *p) {
     Calque rendu;
-    memcpy(p->rendu.rvb, p->virtuel.rvb, 3*p->rendu.l*p->rendu.h);
+    ImageRVB_copier(&p->rendu, &p->virtuel);
     rendu.img_calculee.rvb = p->rendu.rvb;
     rendu.img_calculee.l   = p->rendu.l;
     rendu.img_calculee.h   = p->rendu.h;
@@ -143,13 +143,14 @@ bool PileCalques_ajouterCalqueVierge(PileCalques *p) {
     p->courant = nouveau;
     return true;
 }
-void PileCalques_supprimerCalqueCourant(PileCalques *p) {
+bool PileCalques_supprimerCalqueCourant(PileCalques *p) {
     Calque *dessus = p->courant->au_dessus;
     Calque *dessous = p->courant->en_dessous;
     if(!dessus && !dessous)
-        return;
+        return false;
     Calque_detruire(p->courant);
     if(dessous) dessous->au_dessus = dessus;
     if(dessus)  dessus->en_dessous = dessous;
     p->courant = dessous;
+    return true;
 }

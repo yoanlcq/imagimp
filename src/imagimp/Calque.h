@@ -53,5 +53,5 @@ void Calque_appliquerPremiereLUT(Calque *calque);
 bool PileCalques_allouer(PileCalques *p, size_t l, size_t h);
 void PileCalques_recalculer(PileCalques *p);
 bool PileCalques_ajouterCalqueVierge(PileCalques *p);
-void PileCalques_supprimerCalqueCourant(PileCalques *p);
+bool PileCalques_supprimerCalqueCourant(PileCalques *p);
 void PileCalques_desallouerTout(PileCalques *p);
