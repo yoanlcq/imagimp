@@ -9,10 +9,21 @@
 #include "ImageRVB.h"
 
 static void Imagimp_usage(const char *nom_prog) {
-    fprintf(stderr, "Usage: %s <img.ppm>\n"
-                    "Sinon: %s :<largeur>x<hauteur>\n"
-                    "Une taille de 512x512 est recommandée.\n", 
-                    nom_prog, nom_prog);
+    fprintf(stderr, "\n--- Usages possibles ---\n\n"
+                    "Lancer avec une image :\n    %s <img.ppm> [<commande>[:<param1>]*]*\n"
+                    "Lancer sans image :\n    %s :<largeur>x<hauteur> [<commande>[:<param1>]*]*\n\n"
+                    "Dans tous les cas, la taille du canevas est fixée par le premier argument.\n"
+                    "Une taille de 512x512 est recommandée.\n"
+                    "Les commandes sont résolues par recherche approximative :\n"
+                    "Par exemple, 'PIA', 'SE' voire 'EPI' vont au final correspondre à 'SEPIA'.\n"
+                    "La console de l'IHM permet de découvrir les commandes et d'expérimenter.\n\n"
+                    "Exemples d'utilisation :\n"
+                    "   %s :512x512 rc:255:128:56 \n"
+                    "   %s :512x512 COULEUR:255:128:56 \n"
+                    "   %s images/Mire_HSV.512.ppm SEPIA ADDLUM:230 INVERT DIMCON:50\n"
+                    "   %s images/Mire_HSV.512.ppm SE ADDL:230 INV DIMC:50\n"
+                    "   %s :400x320 IM_1:images/Phoenix.512.ppm IM_1:images/Clown.256.ppm e:export/clownix.ppm q\n",
+                    nom_prog, nom_prog, nom_prog, nom_prog, nom_prog, nom_prog, nom_prog);
 }
 
 bool Imagimp_lancer(Imagimp *imagimp, int argc, char *argv[]) {
@@ -46,9 +57,6 @@ bool Imagimp_lancer(Imagimp *imagimp, int argc, char *argv[]) {
     imagimp->hauteur_lignecmd = 14;
     imagimp->vue_export = true;
 
-    memset(&imagimp->console, 0, sizeof(Console));
-    strncpy(imagimp->console.reponse, "VIMagimp | Lucas DUSSOUCHAUD - Yoan LECOQ | promo IMAC 2018", CONSOLE_MAX_REPONSE);
-
     if(!PileCalques_allouer(&imagimp->calques, l, h)) {
         fputs("N'a pas pu allouer la pile de calques.", stderr);
         return false;
@@ -57,6 +65,19 @@ bool Imagimp_lancer(Imagimp *imagimp, int argc, char *argv[]) {
     ImageRVB_remplirRVB(&imagimp->calques.virtuel, 255, 255, 255);
     ImageRVB_desallouer(&imagimp->calques.courant->img_source);
     imagimp->calques.courant->img_source.rvb = chargee.rvb;
+
+    memset(&imagimp->console, 0, sizeof(Console));
+    size_t i, j;
+    for(i=2 ; i<argc ; ++i) {
+        Console_effacerEntree(&imagimp->console);
+        size_t len = strlen(argv[i]);
+        for(j=0 ; j<len ; ++j)
+            Console_insererCaractere(&imagimp->console, argv[i][j]==':' ? ' ' : argv[i][j]);
+        Console_executer(&imagimp->console, imagimp);
+    }
+    strncpy(imagimp->console.reponse, "VIMagimp | Lucas DUSSOUCHAUD - Yoan LECOQ | promo IMAC 2018", CONSOLE_MAX_REPONSE);
+
+
     Calque_recalculer(imagimp->calques.courant);
     PileCalques_recalculer(&imagimp->calques);
 #define img (imagimp->calques.rendu_gl)

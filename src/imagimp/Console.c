@@ -199,6 +199,7 @@ static void cmd_e(Imagimp *imagimp, int argc, const char * const *argv) {
         return;
     }
     snprintf(imagimp->console.reponse, CONSOLE_MAX_REPONSE, "Image exportee vers '%s'.", nom_fichier);
+    printf("Image exportee vers '%s'.\n", nom_fichier);
 }
 
 const ConsoleCmd CONSOLE_CMDS[CONSOLE_MAX_CMDS] = {
