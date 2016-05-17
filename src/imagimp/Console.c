@@ -10,10 +10,6 @@
 /* Les fonctions static qui suivent sont les callbacks pour chaque commande.
  * Je conseille de regarder le tableau CONSOLE_CMDS plus bas qui décrit un peu chaque commande. */
 
-static void nonImplementee(Imagimp *imagimp, int argc, const char * const * argv) {
-    snprintf(imagimp->console.reponse, CONSOLE_MAX_REPONSE, "%s: Cette commande n'est pas encore implementee.", argv[0]);
-    imagimp->console.reponse_rouge = true;
-}
 static void nonReconnue(Imagimp *imagimp, int argc, const char * const *argv) {
     strncpy(imagimp->console.reponse, "Commande non reconnue.", CONSOLE_MAX_REPONSE);
     imagimp->console.reponse_rouge = true;
@@ -22,6 +18,8 @@ static void cmd_q(Imagimp *imagimp, int argc, const char * const *argv) {
     PileCalques_desallouerTout(&imagimp->calques);
     exit(EXIT_SUCCESS);
 }
+/* Celle-ci n'est pas une commande, mais tellement de commandes font ces opérations
+ * que ça mérite d'être une fonction. */
 static void recalculerCalquePuisPilePuisAfficher(Imagimp *imagimp) {
     Calque_recalculer(imagimp->calques.courant);
     PileCalques_recalculer(&imagimp->calques);
@@ -40,7 +38,11 @@ static void cmd_cn(Imagimp *imagimp, int argc, const char * const *argv) {
             CONSOLE_MAX_REPONSE);
 }
 static void cmd_cs(Imagimp *imagimp, int argc, const char * const *argv) {
-    PileCalques_supprimerCalqueCourant(&imagimp->calques);
+    if(!PileCalques_supprimerCalqueCourant(&imagimp->calques)) {
+        strncpy(imagimp->console.reponse, "Vous ne pouvez pas supprimer le dernier calque restant.", CONSOLE_MAX_REPONSE);
+        imagimp->console.reponse_rouge = true;
+        return;
+    }
     PileCalques_recalculer(&imagimp->calques);
     Imagimp_actualiserAffichageCanevas(imagimp);
     imagimp->console.reponse[0] = '\0';
@@ -94,7 +96,6 @@ static void cmd_cmm(Imagimp *imagimp, int argc, const char * const *argv) {
     recalculerCalquePuisPilePuisAfficher(imagimp);
     imagimp->console.reponse[0] = '\0';
 }
-static void cmd_cd(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv); }
 static void cmd_crc(Imagimp *imagimp, int argc, const char * const *argv) {
     if(argc <= 3) {
         strncpy(imagimp->console.reponse, "Trois valeurs : rouge, vert et bleu, sont requises.", CONSOLE_MAX_REPONSE);
@@ -133,23 +134,32 @@ static void cmd_cln_helper(Imagimp *imagimp, int argc, const char *const* argv, 
         return;
     }
     LUT *lut = imagimp->calques.courant->luts.derniere;
+    if(argc > 1)
+        lut->param1 = strtoul(argv[1], NULL, 0);
+    else
+        lut->param1 = 200;
     lut->fonction = lut_func;
     lut->fonction(lut);
     recalculerCalquePuisPilePuisAfficher(imagimp);
-    strncpy(imagimp->console.reponse, "Changez le parametre de votre LUT avec 'clp'.", CONSOLE_MAX_REPONSE);
+    strncpy(imagimp->console.reponse, "LUT ajoutee en fin de liste. Changer ses parametres avec 'clpd'.", CONSOLE_MAX_REPONSE);
 }
-static void cmd_clni(Imagimp *imagimp, int argc, const char * const *argv) {  cmd_cln_helper(imagimp, argc, argv, LUT_inversion); }
-static void cmd_clns(Imagimp *imagimp, int argc, const char * const *argv) {  cmd_cln_helper(imagimp, argc, argv, LUT_sepia); }
-static void cmd_clnal(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_augmentationLuminosite); }
-static void cmd_clndl(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_diminutionLuminosite); }
-static void cmd_clnac(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_augmentationContraste); }
-static void cmd_clndc(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_diminutionContraste); }
-static void cmd_clnar(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_augmentationR); }
-static void cmd_clnav(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_augmentationV); }
-static void cmd_clnab(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_augmentationB); }
-static void cmd_clndr(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_diminutionR); }
-static void cmd_clndv(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_diminutionV); }
-static void cmd_clndb(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_diminutionB); }
+static void cmd_clni(Imagimp *imagimp, int argc, const char * const *argv)   { cmd_cln_helper(imagimp, argc, argv, LUT_inversion); }
+static void cmd_clns(Imagimp *imagimp, int argc, const char * const *argv)   { cmd_cln_helper(imagimp, argc, argv, LUT_sepia); }
+static void cmd_clnal(Imagimp *imagimp, int argc, const char * const *argv)  { cmd_cln_helper(imagimp, argc, argv, LUT_augmentationLuminosite); }
+static void cmd_clndl(Imagimp *imagimp, int argc, const char * const *argv)  { cmd_cln_helper(imagimp, argc, argv, LUT_diminutionLuminosite); }
+static void cmd_clnac(Imagimp *imagimp, int argc, const char * const *argv)  { cmd_cln_helper(imagimp, argc, argv, LUT_augmentationContraste); }
+static void cmd_clndc(Imagimp *imagimp, int argc, const char * const *argv)  { cmd_cln_helper(imagimp, argc, argv, LUT_diminutionContraste); }
+static void cmd_clnar(Imagimp *imagimp, int argc, const char * const *argv)  { cmd_cln_helper(imagimp, argc, argv, LUT_augmentationR); }
+static void cmd_clnav(Imagimp *imagimp, int argc, const char * const *argv)  { cmd_cln_helper(imagimp, argc, argv, LUT_augmentationV); }
+static void cmd_clnab(Imagimp *imagimp, int argc, const char * const *argv)  { cmd_cln_helper(imagimp, argc, argv, LUT_augmentationB); }
+static void cmd_clndr(Imagimp *imagimp, int argc, const char * const *argv)  { cmd_cln_helper(imagimp, argc, argv, LUT_diminutionR); }
+static void cmd_clndv(Imagimp *imagimp, int argc, const char * const *argv)  { cmd_cln_helper(imagimp, argc, argv, LUT_diminutionV); }
+static void cmd_clndb(Imagimp *imagimp, int argc, const char * const *argv)  { cmd_cln_helper(imagimp, argc, argv, LUT_diminutionB); }
+static void cmd_clnexp(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_exp); }
+static void cmd_clnln(Imagimp *imagimp, int argc, const char * const *argv)  { cmd_cln_helper(imagimp, argc, argv, LUT_ln); }
+static void cmd_clng(Imagimp *imagimp, int argc, const char * const *argv)   { cmd_cln_helper(imagimp, argc, argv, LUT_gamma); }
+static void cmd_clncos(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_cos); }
+static void cmd_clnsin(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_sin); }
 static void cmd_clap(Imagimp *imagimp, int argc, const char * const *argv) { 
     Calque_appliquerPremiereLUT(imagimp->calques.courant);
     recalculerCalquePuisPilePuisAfficher(imagimp);
@@ -160,7 +170,7 @@ static void cmd_clsd(Imagimp *imagimp, int argc, const char * const *argv) {
     recalculerCalquePuisPilePuisAfficher(imagimp);
     strncpy(imagimp->console.reponse, "La derniere LUT a ete supprimee.", CONSOLE_MAX_REPONSE);
 }
-static void cmd_clp(Imagimp *imagimp, int argc, const char * const *argv) {
+static void cmd_clpd(Imagimp *imagimp, int argc, const char * const *argv) {
     if(argc <= 1) {
         strncpy(imagimp->console.reponse, "Une valeur est requise.", CONSOLE_MAX_REPONSE);
         imagimp->console.reponse_rouge = true;
@@ -181,51 +191,49 @@ static void cmd_v(Imagimp *imagimp, int argc, const char * const *argv) {
             "Visualisation %s.", 
             imagimp->vue_export ? "de l'image finale" : "des pixels originaux du calque");
 }
-static void cmd_eh(Imagimp *imagimp, int argc, const char * const *argv) { nonImplementee(imagimp, argc, argv);}
 static void cmd_e(Imagimp *imagimp, int argc, const char * const *argv) {
-    if(argc <= 1) {
-        strncpy(imagimp->console.reponse, "Le nom du fichier PPM est requis.", CONSOLE_MAX_REPONSE);
+    const char *nom_fichier = argc>1 ? argv[1] : "sans_titre.ppm";
+    if(!ImageRVB_exporterPPM(&imagimp->calques.rendu, nom_fichier)) {
+        snprintf(imagimp->console.reponse, CONSOLE_MAX_REPONSE, "N'a pas pu exporter vers '%s'.", nom_fichier);
         imagimp->console.reponse_rouge = true;
         return;
     }
-    if(!ImageRVB_exporterPPM(&imagimp->calques.rendu, argv[1])) {
-        snprintf(imagimp->console.reponse, CONSOLE_MAX_REPONSE, "N'a pas pu exporter vers '%s'.", argv[1]);
-        imagimp->console.reponse_rouge = true;
-        return;
-    }
-    snprintf(imagimp->console.reponse, CONSOLE_MAX_REPONSE, "Image exportee vers '%s'.", argv[1]);
+    snprintf(imagimp->console.reponse, CONSOLE_MAX_REPONSE, "Image exportee vers '%s'.", nom_fichier);
 }
 
 const ConsoleCmd CONSOLE_CMDS[CONSOLE_MAX_CMDS] = {
-{ cmd_cn,    {"cn"   , "CAL_1"},            "Calque, Nouveau", ""},
-{ cmd_cs,    {"cs"   , "CAL_5"},            "Calque, Supprimer", ""},
-{ cmd_cc,    {"cc"   , "CAL_2"},            "Calque, Changer", "<ecart>"},
-{ cmd_co,    {"co"   , "CAL_3"},            "Calque, Opacite", "[0;100]"},
-{ cmd_cmn,   {"cmn"  , "CAL_4_NORMAL"},     "Calque, Melange Normal", ""},
-{ cmd_cma,   {"cma"  , "CAL_4_ADD"},        "Calque, Melange Addition", ""},
-{ cmd_cmm,   {"cmm"  , "CAL_4_MUL"},        "Calque, Melange Multiplication", ""},
-{ cmd_cd,    {"cd"   , "CAL_EXT_DEPLACER"}, "Calque, Deplacer", "<ecart>"},
-{ cmd_crc,   {"crc"  , "CAL_EXT_COULEUR"},  "Calque, Remplir par une Couleur", "[0;255] [0;255] [0;255]"},
-{ cmd_cri,   {"cri"  , "IM_1"},             "Calque, Remplir par une Image PPM", "images/Phoenix.512.ppm"},
-{ cmd_clni,  {"clni" , "LUT_1_INVERT"},     "Calque, LUT, Nouvelle, Inversion", ""},
-{ cmd_clns,  {"clns" , "LUT_1_SEPIA"},      "Calque, LUT, Nouvelle, Sepia", ""},
-{ cmd_clnal, {"clnal", "LUT_1_ADDLUM"},     "Calque, LUT, Nouvelle, Augmentation Luminosite", ""},
-{ cmd_clndl, {"clndl", "LUT_1_DIMLUM"},     "Calque, LUT, Nouvelle, Diminution Luminosite", ""},
-{ cmd_clnac, {"clnac", "LUT_1_ADDCON"},     "Calque, LUT, Nouvelle, Augmentation Contraste", ""},
-{ cmd_clndc, {"clndc", "LUT_1_DIMCON"},     "Calque, LUT, Nouvelle, Diminution Contraste", ""},
-{ cmd_clnar, {"clnar", "LUT_1_EXT_ADDR"},   "Calque, LUT, Nouvelle, Augmentation Rouge", ""},
-{ cmd_clnav, {"clnav", "LUT_1_EXT_ADDV"},   "Calque, LUT, Nouvelle, Augmentation Vert", ""},
-{ cmd_clnab, {"clnab", "LUT_1_EXT_ADDB"},   "Calque, LUT, Nouvelle, Augmentation Bleu", ""},
-{ cmd_clndr, {"clndr", "LUT_1_EXT_DIMR"},   "Calque, LUT, Nouvelle, Diminution Rouge", ""},
-{ cmd_clndv, {"clndv", "LUT_1_EXT_DIMV"},   "Calque, LUT, Nouvelle, Diminution Vert", ""},
-{ cmd_clndb, {"clndb", "LUT_1_EXT_DIMB"},   "Calque, LUT, Nouvelle, Diminution Bleu", ""},
-{ cmd_clap,  {"clap" , "LUT_2"},            "Calque, LUT, Appliquer la Premiere", ""},
-{ cmd_clsd,  {"clsd" , "LUT_3"},            "Calque, LUT, Supprimer la Derniere", ""},
-{ cmd_clp,   {"clp"  , "LUT_EXT_PARAMS"},   "Calque, LUT, Parametres", "[0:255]"},
-{ cmd_v,     {"v"    , "IHM_1"},            "Vue (cycle entre 'export' et 'image source du calque')", ""},
-{ cmd_eh,    {"eh"   , "IM_EXT_HISTG"},     "Exporter Histogrammes (PPM)", "export/histogrammes.ppm"},
-{ cmd_e,     {"e"    , "IM_2"},             "Exporter (PPM)", "export/sans_titre.ppm"},
-{ cmd_q,     {"q"    , "IHM_4"},            "Quitter", ""},
+{ cmd_cn,     {"cn"    , "CAL_1"},           "Calque, Nouveau", ""},
+{ cmd_cs,     {"cs"    , "CAL_5"},           "Calque, Supprimer", ""},
+{ cmd_cc,     {"cc"    , "CAL_2"},           "Calque, Changer de calque courant", "<position_relative_au_calque_courant>"},
+{ cmd_co,     {"co"    , "CAL_3"},           "Calque, Opacite", "[0;100]"},
+{ cmd_cmn,    {"cmn"   , "CAL_4_NORMAL"},    "Calque, Melange Normal", ""},
+{ cmd_cma,    {"cma"   , "CAL_4_ADD"},       "Calque, Melange Addition", ""},
+{ cmd_cmm,    {"cmm"   , "CAL_4_MUL"},       "Calque, Melange Multiplication", ""},
+{ cmd_crc,    {"crc"   , "CAL_EXT_COULEUR"}, "Calque, Remplir par une Couleur", "[0;255] [0;255] [0;255]"},
+{ cmd_cri,    {"cri"   , "IM_1"},            "Calque, Remplir par une Image PPM", "images/Phoenix.512.ppm"},
+{ cmd_clni,   {"clni"  , "INVERT"},          "Calque, LUT, Nouvelle, Inversion", ""},
+{ cmd_clns,   {"clns"  , "SEPIA"},           "Calque, LUT, Nouvelle, Sepia", ""},
+{ cmd_clnal,  {"clnal" , "ADDLUM"},          "Calque, LUT, Nouvelle, Augmentation Luminosite", "[0;255]"},
+{ cmd_clndl,  {"clndl" , "DIMLUM"},          "Calque, LUT, Nouvelle, Diminution Luminosite", "[0;255]"},
+{ cmd_clnac,  {"clnac" , "ADDCON"},          "Calque, LUT, Nouvelle, Augmentation Contraste", "[0;255]"},
+{ cmd_clndc,  {"clndc" , "DIMCON"},          "Calque, LUT, Nouvelle, Diminution Contraste", "[0;255]"},
+{ cmd_clnar,  {"clnar" , "ADDR"},            "Calque, LUT, Nouvelle, Augmentation Rouge", "[0;255]"},
+{ cmd_clnav,  {"clnav" , "ADDV"},            "Calque, LUT, Nouvelle, Augmentation Vert", "[0;255]"},
+{ cmd_clnab,  {"clnab" , "ADDB"},            "Calque, LUT, Nouvelle, Augmentation Bleu", "[0;255]"},
+{ cmd_clndr,  {"clndr" , "DIMR"},            "Calque, LUT, Nouvelle, Diminution Rouge", "[0;255]"},
+{ cmd_clndv,  {"clndv" , "DIMV"},            "Calque, LUT, Nouvelle, Diminution Vert", "[0;255]"},
+{ cmd_clndb,  {"clndb" , "DIMB"},            "Calque, LUT, Nouvelle, Diminution Bleu", "[0;255]"},
+{ cmd_clnexp, {"clnexp", "EXP"},             "Calque, LUT, Nouvelle, Exponentielle", "[0;255]"},
+{ cmd_clnln,  {"clnln" , "LN"},              "Calque, LUT, Nouvelle, Logarithme Neperien", "[0;255]"},
+{ cmd_clng,   {"clng"  , "GAMMA"},           "Calque, LUT, Nouvelle, Gamma", "[0;255]"},
+{ cmd_clncos, {"clncos", "COS"},             "Calque, LUT, Nouvelle, Cosinus", "[0;255]"},
+{ cmd_clnsin, {"clnsin", "SIN"},             "Calque, LUT, Nouvelle, Sinus", "[0;255]"},
+{ cmd_clap,   {"clap"  , "LUT_2"},           "Calque, LUT, Appliquer la Premiere de la liste", ""},
+{ cmd_clsd,   {"clsd"  , "LUT_3"},           "Calque, LUT, Supprimer la Derniere de la liste", ""},
+{ cmd_clpd,   {"clpd"  , "LUT_EXT_PARAMS"},  "Calque, LUT, changer les Parametres de la Derniere", "[0:255]"},
+{ cmd_v,      {"v"     , "IHM_1"},           "Vue (cycle entre 'export' et 'image source du calque')", ""},
+{ cmd_e,      {"e"     , "IM_2"},            "Exporter (PPM)", "sans_titre.ppm"},
+{ cmd_q,      {"q"     , "IHM_4"},           "Quitter", ""},
 {NULL, {NULL, NULL}, NULL, NULL} /* Indique la fin du tableau */
 };
 
@@ -315,7 +323,8 @@ void Console_effacerEntree(Console *lc) {
     Console_suggerer(lc);
 }
 void Console_completer(Console *lc) {
-    /* TODO, quand tu veux */
+    strncpy(lc->reponse, "Ouais non, on n'a pas encore l'auto-completion. x)", CONSOLE_MAX_REPONSE);
+    lc->reponse_rouge = true;
 }
 void Console_executer(Console *lc, Imagimp *imagimp) {
     char *cmdid = lc->tampon;

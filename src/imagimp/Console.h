@@ -6,7 +6,7 @@
 
 #define CONSOLE_MAX_TAMPON  512 /* Va dépasser ça. */
 #define CONSOLE_MAX_REPONSE 512
-#define CONSOLE_MAX_CMDS 32 /* Attention, pas forcément le nombre exact de commandes. */
+#define CONSOLE_MAX_CMDS 64 /* Attention, pas forcément le nombre exact de commandes. */
 #define CONSOLE_CMD_MAX_ALIAS 2
 
 typedef struct {

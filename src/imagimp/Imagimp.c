@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include <GL/glut.h>
 #include "glimagimp/interface.h"
 #include "glimagimp/outils.h"
@@ -52,7 +53,8 @@ bool Imagimp_lancer(Imagimp *imagimp, int argc, char *argv[]) {
         fputs("N'a pas pu allouer la pile de calques.", stderr);
         return false;
     }
-    ImageRVB_remplirEchiquier(&imagimp->calques.virtuel, 16, 64, 150);
+    /* ImageRVB_remplirEchiquier(&imagimp->calques.virtuel, 16, 64, 150); */
+    ImageRVB_remplirRVB(&imagimp->calques.virtuel, 255, 255, 255);
     ImageRVB_desallouer(&imagimp->calques.courant->img_source);
     imagimp->calques.courant->img_source.rvb = chargee.rvb;
     Calque_recalculer(imagimp->calques.courant);
@@ -95,7 +97,8 @@ void Imagimp_fonctionClavierTexte(Imagimp *imagimp, unsigned char ascii, int x, 
         imagimp->fonction_clavier_special = Imagimp_fonctionClavierSpecial;
         break;
     default:
-        Console_insererCaractere(&imagimp->console, ascii);
+        if(isprint(ascii))
+            Console_insererCaractere(&imagimp->console, ascii);
         break;
     }
 }
@@ -151,6 +154,23 @@ void Imagimp_fonctionSouris(Imagimp *imagimp, int bouton, int appuye, int x, int
            bouton, appuye ? "pressé" : "laché", x, y);
     */
 }
+
+
+
+/* Dans toutes les fonctions de dessin de GLimagimp,
+ * le repère est comme suit :
+ *  
+ * 1 ^
+ *   |
+ *   |
+ *   |
+ *   .------> 
+ * 0        1
+ *
+ * Dans ce repère, la hauteur de la fenetre est 1,
+ * tout comme sa largeur.
+ */
+
 
 static void dessinerHistogramme(const Histogramme *histo, float x, float y, float l, float h) {
     const float pas = l/256.f;

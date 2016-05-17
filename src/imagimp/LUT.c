@@ -51,14 +51,6 @@ void ListeLUTs_retirerPremiere(ListeLUTs *liste) {
     free(old);
 }
 
-/* https://github.com/yoanlcq/imagimp/wiki/Comprendre-les-LUTs */
-
-/* Pour les fonctions suivantes, utiliser 'lut->param1' comme paramètre. */
-void LUT_augmentationLuminosite(LUT *lut) {}
-void LUT_diminutionLuminosite(LUT *lut) {}
-void LUT_augmentationContraste(LUT *lut) {}
-void LUT_diminutionContraste(LUT *lut) {}
-
 /* Les fonctions suivantes n'ont pas de paramètres */
 
 void LUT_inversion(LUT *lut) {
@@ -335,10 +327,29 @@ void LUT_sepia(LUT *lut) {
         lut->b[i] = sepia[3*i+2];
     }
 }
+
+/* TODO Lucas */
+
+/* https://github.com/yoanlcq/imagimp/wiki/Comprendre-les-LUTs */
+/* Surtout ça, après le milieu de la page 4 :
+ * http://www.xcitex.com/Resource%20Center/ProAnalyst/Application%20Notes/App%20Note%20151%20-%20Image%20Processing%20Brightness,%20Contrast,%20Gamma%20and%20Exponential.pdf 
+ * Ca aide pas mal, surtout pour la LUT de contraste. */
+
+/* La mission des fonctions suivantes : 
+ * Remplir lut->r, lut->v et lut->b en fonction de lut->param1.*/
+void LUT_augmentationLuminosite(LUT *lut) {}
+void LUT_diminutionLuminosite(LUT *lut) {}
+void LUT_augmentationContraste(LUT *lut) {}
+void LUT_diminutionContraste(LUT *lut) {}
+/* Celles-ci ne sont pas demandées - fais-les si tu veux. */
 void LUT_augmentationR(LUT *lut) {}
 void LUT_augmentationV(LUT *lut) {}
 void LUT_augmentationB(LUT *lut) {}
 void LUT_diminutionR(LUT *lut) {}
 void LUT_diminutionV(LUT *lut) {}
 void LUT_diminutionB(LUT *lut) {}
-
+void LUT_exp(LUT *lut) {}
+void LUT_ln(LUT *lut) {}
+void LUT_gamma(LUT *lut) {}
+void LUT_cos(LUT *lut) {}
+void LUT_sin(LUT *lut) {}
