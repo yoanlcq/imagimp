@@ -38,7 +38,7 @@ endif
 .PHONY: all clean mrproper re dirs
 
 CC = gcc
-CFLAGS = -g -Wall -Isrc
+CFLAGS = -g -std=gnu99 -Wall -Isrc
 LDLIBS = -Llib -Wl,-rpath,lib -Wl,-rpath,../lib -lglimagimp -lm
 EXE = bin/imagimp$(EXE_EXTENSION)
 LIBGLIMAGIMP = lib/$(DLL_PREFIX)glimagimp$(DLL_EXTENSION)
