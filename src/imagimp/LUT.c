@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <math.h>
 #include "LUT.h"
 
 bool ListeLUTs_allouer(ListeLUTs *liste) {
@@ -337,19 +338,96 @@ void LUT_sepia(LUT *lut) {
 
 /* La mission des fonctions suivantes : 
  * Remplir lut->r, lut->v et lut->b en fonction de lut->param1.*/
-void LUT_augmentationLuminosite(LUT *lut) {}
-void LUT_diminutionLuminosite(LUT *lut) {}
+#define min(a,b) ((a)<(b) ? (a) : (b))
+#define max(a,b) ((a)>(b) ? (a) : (b))
+
+
+void LUT_augmentationLuminosite(LUT *lut) {
+    size_t i;
+    for(i=0; i<256; i++) {
+        lut->r[i] = min(255, lut->param1+i);
+        lut->v[i] = min(255, lut->param1+i);
+        lut->b[i] = min(255, lut->param1+i);
+    }
+}
+
+void LUT_diminutionLuminosite(LUT *lut) {
+    size_t i;
+    for(i=0; i<256; i++) {
+        lut->r[i] = max(0, (int)(i-lut->param1));
+        lut->v[i] = max(0, (int)(i-lut->param1));
+        lut->b[i] = max(0, (int)(i-lut->param1));
+    }
+}
 void LUT_augmentationContraste(LUT *lut) {}
 void LUT_diminutionContraste(LUT *lut) {}
 /* Celles-ci ne sont pas demandées - fais-les si tu veux. */
-void LUT_augmentationR(LUT *lut) {}
-void LUT_augmentationV(LUT *lut) {}
-void LUT_augmentationB(LUT *lut) {}
-void LUT_diminutionR(LUT *lut) {}
-void LUT_diminutionV(LUT *lut) {}
-void LUT_diminutionB(LUT *lut) {}
-void LUT_exp(LUT *lut) {}
-void LUT_ln(LUT *lut) {}
+void LUT_augmentationR(LUT *lut) {
+    size_t i;
+    for(i=0; i<256; i++) {
+        lut->r[i] = min(255, lut->param1+i);
+        lut->v[i] = i;
+        lut->b[i] = i;
+    }
+}
+void LUT_augmentationV(LUT *lut) {
+    size_t i;
+    for(i=0; i<256; i++) {
+        lut->r[i] = i;
+        lut->v[i] = min(255, lut->param1+i);
+        lut->b[i] = i;
+    }
+}
+void LUT_augmentationB(LUT *lut) {
+    size_t i;
+    for(i=0; i<256; i++) {
+        lut->r[i] = i;
+        lut->v[i] = i;
+        lut->b[i] = min(255, lut->param1+i);
+    }
+}
+void LUT_diminutionR(LUT *lut) {
+    size_t i;
+    for(i=0; i<256; i++) {
+        lut->r[i] = max(0, (int)(i-lut->param1));
+        lut->v[i] = i;
+        lut->b[i] = i;
+    }
+}
+void LUT_diminutionV(LUT *lut) {
+    size_t i;
+    for(i=0; i<256; i++) {
+        lut->r[i] = i;
+        lut->v[i] = max(0, (int)(i-lut->param1));
+        lut->b[i] = i;
+    }
+}
+void LUT_diminutionB(LUT *lut) {
+    size_t i;
+    for(i=0; i<256; i++) {
+        lut->r[i] = i;
+        lut->v[i] = i;
+        lut->b[i] = max(0, (int)(i-lut->param1));
+    }
+}
+void LUT_exp(LUT *lut) {
+    LUT_ln(lut);
+    
+    size_t i;
+    for(i=0; i<256; i++) {
+        lut->r[i] = 255-lut->r[255-i];
+        lut->v[i] = 255-lut->v[255-i];
+        lut->b[i] = 255-lut->b[255-i];
+    }
+}
+void LUT_ln(LUT *lut) {
+    size_t i;
+    for(i=0; i<256; i++) {
+        lut->r[i] = min(255, log(i)*(255-lut->param1)/5.0 +lut->param1);
+        lut->v[i] = min(255, log(i)*(255-lut->param1)/5.0 +lut->param1);
+        lut->b[i] = min(255, log(i)*(255-lut->param1)/5.0 +lut->param1);
+    }
+}
 void LUT_gamma(LUT *lut) {}
 void LUT_cos(LUT *lut) {}
 void LUT_sin(LUT *lut) {}
