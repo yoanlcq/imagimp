@@ -29,7 +29,7 @@ ifeq ($(OS),windows)
 	LIBGLU=glu32
 	LIBGLUT=freeglut
 	FPIC=
-	CLEANCMD = if exist obj ( rmdir /Q /S obj lib )
+	CLEANCMD = if exist obj ( rmdir /Q /S obj $(LIBDIR) )
 else
 	MKDIRP=mkdir -p
 	SLASH=/
@@ -41,7 +41,7 @@ else
 	LIBGLU=GLU
 	LIBGLUT=glut
 	FPIC=-fPIC
-	CLEANCMD = rm -rf obj lib
+	CLEANCMD = rm -rf obj $(LIBDIR)
 endif
 
 .PHONY: all clean mrproper re dirs
