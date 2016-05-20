@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "Calque.h"
 
 
@@ -163,6 +164,6 @@ bool PileCalques_supprimerCalqueCourant(PileCalques *p) {
     Calque_detruire(p->courant);
     if(dessous) dessous->au_dessus = dessus;
     if(dessus)  dessus->en_dessous = dessous;
-    p->courant = dessous;
+    p->courant = dessous ? dessous : dessus;
     return true;
 }

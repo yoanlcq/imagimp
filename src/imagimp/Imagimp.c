@@ -8,6 +8,10 @@
 #include "Imagimp.h"
 #include "ImageRVB.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 static void Imagimp_usage(const char *nom_prog) {
     fprintf(stderr, "\n--- Usages possibles ---\n\n"
                     "Lancer avec une image PPM :\n    %s <img.ppm> [<commande>[:<param1>]*]*\n"
@@ -24,6 +28,13 @@ static void Imagimp_usage(const char *nom_prog) {
                     "   %s images/Mire_HSV.512.ppm SE ADDL:230 INV DIMC:50\n"
                     "   %s :400x320 IM_1:images/Phoenix.512.ppm IM_1:images/Clown.256.ppm e:export/clownix.ppm q\n",
                     nom_prog, nom_prog, nom_prog, nom_prog, nom_prog, nom_prog, nom_prog);
+#ifdef _WIN32
+    MessageBoxA(NULL, 
+        "Ce programme exige au moins un parametre en "
+        "ligne de commandes.\nLancez-le dans une invite de commande "
+        "pour plus d'infos.", 
+        "Imagimp: Erreur fatale", MB_OK | MB_ICONERROR);
+#endif
 }
 
 bool Imagimp_lancer(Imagimp *imagimp, int argc, char *argv[]) {
@@ -53,7 +64,7 @@ bool Imagimp_lancer(Imagimp *imagimp, int argc, char *argv[]) {
     imagimp->fonction_souris = Imagimp_fonctionSouris;
     imagimp->fonction_dessin = Imagimp_fonctionDessin;
 
-    imagimp->largeur_ihm = 256;
+    imagimp->largeur_ihm = 260;
     imagimp->hauteur_lignecmd = 14;
     imagimp->vue_export = true;
 
@@ -221,7 +232,7 @@ static void dessinerLesHistogrammes(const Imagimp *imagimp, float histo_h) {
 #define ihm_l (imagimp->largeur_ihm)
         dessinerHistogramme(
             histos[i],
-            (img.l+1.f)/(float)(img.l+ihm_l), 
+            (img.l+2.f)/(float)(img.l+ihm_l), 
             1.f-(imagimp->hauteur_lignecmd*2.f + i*histo_h)/(float)img.h,
             256.f/(img.l+ihm_l),
             histo_h/img.h
@@ -281,7 +292,7 @@ static void dessinerConsole(Console *lc, float h, float img_l, float largeur_ecr
 void Imagimp_fonctionDessin(Imagimp *imagimp) {
 #define img (imagimp->calques.rendu)
 #define ihm_l (imagimp->largeur_ihm)
-    dessinerLesHistogrammes(imagimp, (img.h-imagimp->hauteur_lignecmd)/16.f);
+    dessinerLesHistogrammes(imagimp, (img.h-imagimp->hauteur_lignecmd)/8.f);
     float h_ligne = (imagimp->hauteur_lignecmd)/(float)img.h;
     dessinerConsole(&imagimp->console, h_ligne, 
         img.l, img.l+ihm_l, imagimp->fonction_clavier == Imagimp_fonctionClavierTexte);

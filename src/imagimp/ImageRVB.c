@@ -165,7 +165,7 @@ void ImageRVB_histogrammeRVB(const ImageRVB *img, Histogramme *histogramme) {
             somme = *ImageRVB_pixelR(img, x, y)
                   + *ImageRVB_pixelV(img, x, y)
                   + *ImageRVB_pixelB(img, x, y);
-            ++(histogramme->donnees[(uint8_t)(somme/3)]);
+            ++(histogramme->donnees[(uint8_t)(somme/3.f)]);
         }
     }
     Histogramme_recalculerMinMax(histogramme);
