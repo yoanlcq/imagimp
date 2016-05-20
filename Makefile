@@ -48,7 +48,7 @@ endif
 
 CC = gcc
 CFLAGS = -g -std=gnu99 -Wall -Isrc
-LDLIBS = -L$(LIBDIR) -Wl,-rpath,lib -Wl,-rpath,../lib -l$(LIBGLUT) -lglimagimp -lm
+LDLIBS = -L$(LIBDIR) -Wl,-rpath,$(LIBDIR) -Wl,-rpath,../$(LIBDIR) -l$(LIBGLUT) -lglimagimp -lm
 EXE = bin/imagimp$(EXE_EXTENSION)
 LIBGLIMAGIMP = $(LIBDIR)/$(DLL_PREFIX)glimagimp$(DLL_EXTENSION)
 
