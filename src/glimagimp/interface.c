@@ -225,6 +225,25 @@ void drawScene_GLIMAGIMP(void) {
 void initGLIMAGIMP_IHM(unsigned int w_im,unsigned int h_im,unsigned char *tabRVB,
 											unsigned int w_ecran,unsigned int h_ecran)
 {
+	int argc = 0;
+	char** argv = (char**) malloc(sizeof(char*));
+	argv[0] = (char*) calloc(20,sizeof(char));
+	sprintf(argv[0],"imagimp");
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
+	glutInitWindowPosition(0, 0);
+	glutInitWindowSize(width_ecran, height_ecran);
+	if (glutCreateWindow("IMAGIMP") == GL_FALSE) {
+		printf("Impossible de créer la fenetre GL\n");
+		exit(1);
+	}
+
+    glewExperimental = GL_TRUE;
+    GLenum err = glewInit();
+    if(err != GLEW_OK) {
+        fprintf(stderr, "Failed to initialize GLEW: %s\n", glewGetErrorString(err));
+		exit(EXIT_FAILURE);
+    }
   ////// parametres GL /////////////////////////////////////
 	cptidletime = 0;
 
@@ -244,18 +263,6 @@ void initGLIMAGIMP_IHM(unsigned int w_im,unsigned int h_im,unsigned char *tabRVB
 
 	initDisplay();
 
-	int argc = 0;
-	char** argv = (char**) malloc(sizeof(char*));
-	argv[0] = (char*) calloc(20,sizeof(char));
-	sprintf(argv[0],"imagimp");
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
-	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(width_ecran, height_ecran);
-	if (glutCreateWindow("IMAGIMP") == GL_FALSE) {
-		printf("Impossible de créer la fenetre GL\n");
-		exit(1);
-	}
 	//if (fullscreen) glutFullScreen();
 
 	/* association de la fonction de dimensionnement */

@@ -32,6 +32,7 @@
 #define PAS_FICHIER		1
 
 #include <stdio.h>
+#include <GL/glew.h>
 #include <GL/glut.h>
 #include <math.h>
 

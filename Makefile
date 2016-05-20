@@ -1,6 +1,7 @@
 ## LE MAKEFILE ULTIME ##
 
-# Ce Makefile devrait marcher sous Linux, Windaube (MinGW) et OS X.
+# EDIT : Ce Makefile est confirmé de fonctionner sous Linux et Windows.
+#
 # Normalement il n'y a plus besoin d'y toucher :
 # Créez juste vos fichiers dans src/imagimp et laissez-lui le sale boulot ;)
 #
@@ -21,17 +22,25 @@ ifeq ($(OS),windows)
 	MKDIRP=mkdir
 	SLASH=\\
 	EXE_EXTENSION=.exe
+	LIBDIR=bin
 	DLL_PREFIX=
 	DLL_EXTENSION=.dll
 	LIBGL=opengl32
-	CLEANCMD = IF exist obj ( rmdir /Q /S obj lib )
+	LIBGLU=glu32
+	LIBGLUT=freeglut
+	FPIC=
+	CLEANCMD = if exist obj ( rmdir /Q /S obj lib )
 else
 	MKDIRP=mkdir -p
 	SLASH=/
 	EXE_EXTENSION=
+	LIBDIR=lib
 	DLL_PREFIX=lib
 	DLL_EXTENSION=.so
 	LIBGL=GL
+	LIBGLU=GLU
+	LIBGLUT=GLUT
+	FPIC=-fPIC
 	CLEANCMD = rm -rf obj lib
 endif
 
@@ -39,20 +48,22 @@ endif
 
 CC = gcc
 CFLAGS = -g -std=gnu99 -Wall -Isrc
-LDLIBS = -Llib -Wl,-rpath,lib -Wl,-rpath,../lib -lglimagimp -lm
+LDLIBS = -L$(LIBDIR) -Wl,-rpath,lib -Wl,-rpath,../lib -l$(LIBGLUT) -lglimagimp -lm
 EXE = bin/imagimp$(EXE_EXTENSION)
-LIBGLIMAGIMP = lib/$(DLL_PREFIX)glimagimp$(DLL_EXTENSION)
+LIBGLIMAGIMP = $(LIBDIR)/$(DLL_PREFIX)glimagimp$(DLL_EXTENSION)
 
 
 all: $(LIBGLIMAGIMP) $(EXE)
 
 
-dirs: bin lib obj$(SLASH)glimagimp obj$(SLASH)imagimp
+dirs: bin lib obj$(SLASH)glimagimp obj$(SLASH)imagimp obj$(SLASH)GL
 obj:
 	$(MKDIRP) $@
 obj$(SLASH)glimagimp: | obj
 	$(MKDIRP) $@
 obj$(SLASH)imagimp: | obj
+	$(MKDIRP) $@
+obj$(SLASH)GL: | obj
 	$(MKDIRP) $@
 lib:
 	$(MKDIRP) $@
@@ -63,19 +74,18 @@ bin:
 obj/imagimp/%.o : src/imagimp/%.c | dirs
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(EXE): $(addsuffix .o, \
-			$(addprefix obj/imagimp/, \
-				$(notdir \
-					$(basename \
-						$(wildcard src/imagimp/*.c)))))
+$(EXE): $(patsubst src/%.c,obj/%.o,$(wildcard src/imagimp/*.c))
 	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS)
 
+obj/GL/%.o: src/GL/%.c | dirs
+	$(CC) $(CFLAGS) -DGLEW_BUILD $(FPIC) -c $< -o $@
 obj/glimagimp/%.o: src/glimagimp/%.c | dirs
-	$(CC) $(CFLAGS) -fPIC -c $< -o $@
+	$(CC) $(CFLAGS) -DGLEW_BUILD $(FPIC) -c $< -o $@
 
 $(LIBGLIMAGIMP): obj/glimagimp/interface.o \
-			     obj/glimagimp/outils.o
-	$(CC) $(CFLAGS) -fPIC -shared $^ -o $@ -l$(LIBGL) -lGLU -lglut -lm
+			     obj/glimagimp/outils.o \
+				 obj/GL/glew.o
+	$(CC) $(CFLAGS) -DGLEW_BUILD $(FPIC) -shared -Wl,--export-all-symbols -s $^ -o $@ -l$(LIBGL) -l$(LIBGLU) -l$(LIBGLUT) -lm
 
 clean:
 	$(CLEANCMD)

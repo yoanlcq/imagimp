@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <ctype.h>
-#include <GL/glut.h>
+#include <GL/glew.h>
 #include "glimagimp/interface.h"
 #include "glimagimp/outils.h"
 #include "Imagimp.h"

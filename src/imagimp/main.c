@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "Imagimp.h"
 #include "glimagimp/interface.h"
 
