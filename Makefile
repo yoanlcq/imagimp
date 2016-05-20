@@ -39,7 +39,7 @@ else
 	DLL_EXTENSION=.so
 	LIBGL=GL
 	LIBGLU=GLU
-	LIBGLUT=GLUT
+	LIBGLUT=glut
 	FPIC=-fPIC
 	CLEANCMD = rm -rf obj lib
 endif
@@ -85,7 +85,7 @@ obj/glimagimp/%.o: src/glimagimp/%.c | dirs
 $(LIBGLIMAGIMP): obj/glimagimp/interface.o \
 			     obj/glimagimp/outils.o \
 				 obj/GL/glew.o
-	$(CC) $(CFLAGS) -DGLEW_BUILD $(FPIC) -shared -Wl,--export-all-symbols -s $^ -o $@ -l$(LIBGL) -l$(LIBGLU) -l$(LIBGLUT) -lm
+	$(CC) $(CFLAGS) $(FPIC) -shared $^ -o $@ -l$(LIBGL) -l$(LIBGLU) -l$(LIBGLUT) -lm
 
 clean:
 	$(CLEANCMD)

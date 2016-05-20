@@ -32,36 +32,37 @@
 #include <stdlib.h>
 #include <GL/glew.h>
 #include <GL/glut.h>
+#include "dll_export.h"
 
 /// ///////////////////////////////////////////////////////////////////////////
 /// Prototypes des fonctions utilitaires
 /// ///////////////////////////////////////////////////////////////////////////
 // Ecrit une chaine de caractère (s) en position x,y
-void writeString(float x, float y, char* s);
+DLL_EXPORT void writeString(float x, float y, char* s);
 // Fixe la couleur d'écriture
 // r,v,b sont des flotants compris entre 0 et 1
-void fixeCouleur(float r,float v,float b);
+DLL_EXPORT void fixeCouleur(float r,float v,float b);
 // Trace une ligne dans la couleur d'écriture
 // depart_x,depart_y : coordonnées du point de départ
 // fin_x,fin_y : coordonnées du point d'arrivée
-void drawLigne(float depart_x,float depart_y,float fin_x,float fin_y);
+DLL_EXPORT void drawLigne(float depart_x,float depart_y,float fin_x,float fin_y);
 // Trace un carre plein de la couleur courante
 // coin_inf_gauche_x,coin_inf_gauche_y : coordonnees du point en bas a gauche
 // coin_sup_droit_x,coin_sup_droit_y :  coordonnees du point en haut a droite
-void drawCarre(float coin_inf_gauche_x,float coin_inf_gauche_y,
+DLL_EXPORT void drawCarre(float coin_inf_gauche_x,float coin_inf_gauche_y,
 								float coin_sup_droit_x,float coin_sup_droit_y);
 // Trace un carre de la couleur courante
 // coin_inf_gauche_x,coin_inf_gauche_y : coordonnees du point en bas a gauche
 // coin_sup_droit_x,coin_sup_droit_y :  coordonnees du point en haut a droite
-void drawCarreVide(float coin_inf_gauche_x,float coin_inf_gauche_y,
+DLL_EXPORT void drawCarreVide(float coin_inf_gauche_x,float coin_inf_gauche_y,
 								float coin_sup_droit_x,float coin_sup_droit_y);
 // Trace un disque de la couleur courante
 // centre_x,centre_y : coordonnees du centre
 // rayon : rayon du disque (defini en pourcentage de la largeur)
-void drawDisque(float centre_x,float centre_y,float rayon);
+DLL_EXPORT void drawDisque(float centre_x,float centre_y,float rayon);
 // Trace un cercle de la couleur courante
 // centre_x,centre_y : coordonnees du centre
 // rayon : rayon du cercle (defini en pourcentage de la largeur)
-void drawCercle(float centre_x,float centre_y,float rayon);
+DLL_EXPORT void drawCercle(float centre_x,float centre_y,float rayon);
 
 #endif

@@ -35,6 +35,7 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include <math.h>
+#include "dll_export.h"
 
 /// ///////////////////////////////////////////////////////////////////////////
 /// variables globales
@@ -51,7 +52,7 @@ extern unsigned int height_ecran;
 //       Attention ces valeurs sont fixes par la suite
 // tabRVB : Image initiale pour remplir la fenetre
 // ****************************************************************************
-extern void initGLIMAGIMP(unsigned int w,unsigned int h,unsigned char* tabRVB);
+DLL_EXPORT void initGLIMAGIMP(unsigned int w,unsigned int h,unsigned char* tabRVB);
 // ****************************************************************************
 // Appelez cette fonction pour lancer le gestionnaire graphique avec
 //   de la place pour une eventuelle IHM
@@ -60,7 +61,7 @@ extern void initGLIMAGIMP(unsigned int w,unsigned int h,unsigned char* tabRVB);
 // tabRVB : Image initiale pour remplir la fenetre
 // w_ecran,h_ecran : Taille de la fenetre
 // ****************************************************************************
-extern void initGLIMAGIMP_IHM(unsigned int w_im,unsigned int h_im,unsigned char* tabRVB,
+DLL_EXPORT void initGLIMAGIMP_IHM(unsigned int w_im,unsigned int h_im,unsigned char* tabRVB,
 												unsigned int w_ecran,unsigned h_ecran);
 // ****************************************************************************
 // Appelez cette fonction pour definir votre propre fonction qui sera
@@ -70,7 +71,7 @@ extern void initGLIMAGIMP_IHM(unsigned int w_im,unsigned int h_im,unsigned char*
 //       void xxxxx(unsigned char x,int x,int x)
 //       (remplacer les xxxxx et les x par des noms à vous bien sur)
 // ****************************************************************************
-extern void fixeFonctionClavier(void (*fct)(unsigned char,int,int));
+DLL_EXPORT void fixeFonctionClavier(void (*fct)(unsigned char,int,int));
 // ****************************************************************************
 // Appelez cette fonction pour definir votre propre fonction qui sera
 //   donc appelée a chaque fois que l'utilisateur appuyera sur une touche "speciale"
@@ -81,7 +82,7 @@ extern void fixeFonctionClavier(void (*fct)(unsigned char,int,int));
 //       Le premier paramètre est un entier representant une touche
 //       voir http://www.opengl.org/documentation/specs/glut/spec3/node54.html
 // ****************************************************************************
-extern void fixeFonctionClavierSpecial(void (*fct)(int,int,int));
+DLL_EXPORT void fixeFonctionClavierSpecial(void (*fct)(int,int,int));
 // ****************************************************************************
 // Appelez cette fonction pour definir votre propre fonction qui sera
 //	 donc appelée a chaque fois que l'utilisateur clique sur la souris
@@ -92,7 +93,7 @@ extern void fixeFonctionClavierSpecial(void (*fct)(int,int,int));
 //       Le deux premiers paramètres sont l'etat du clic (touche et appuie ou relache)
 //       Les deux suivants correspondent aux coordonnées souris lors du clic
 // ****************************************************************************
-extern void fixeFonctionClicSouris(void (*fct)(int,int,int,int));
+DLL_EXPORT void fixeFonctionClicSouris(void (*fct)(int,int,int,int));
 // ****************************************************************************
 // Appelez cette fonction pour definir votre propre fonction de dessin
 // fct : Mettez simplement le nom de la fonction que VOUS avez défini
@@ -100,7 +101,7 @@ extern void fixeFonctionClicSouris(void (*fct)(int,int,int,int));
 //       void xxxxx()
 //       (remplacer xxxxx par un nom à vous bien sur)
 // ****************************************************************************
-extern void fixeFonctionDessin(void (*fct)(void));
+DLL_EXPORT void fixeFonctionDessin(void (*fct)(void));
 // ****************************************************************************
 // Appelez cette fonction pour redefinir l'image a dessiner
 // newImage : Buffer de la nouvelle image a dessiner
@@ -108,11 +109,11 @@ extern void fixeFonctionDessin(void (*fct)(void));
 //            c.a.d. la meme taille que l'image fournie a la fonction
 //            initGLIMAGIMP
 // ****************************************************************************
-extern void actualiseImage(unsigned char* newImage);
+DLL_EXPORT void actualiseImage(unsigned char* newImage);
 
 /// ///////////////////////////////////////////////////////////////////////////
 /// Fonctions utilitaires
 /// ///////////////////////////////////////////////////////////////////////////
-extern void printInfo();
+DLL_EXPORT void printInfo();
 
 #endif
