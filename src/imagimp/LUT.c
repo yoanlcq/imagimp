@@ -329,12 +329,6 @@ void LUT_sepia(LUT *lut) {
     }
 }
 
-/* TODO Lucas */
-
-/* https://github.com/yoanlcq/imagimp/wiki/Comprendre-les-LUTs */
-/* Surtout ça, après le milieu de la page 4 :
- * http://www.xcitex.com/Resource%20Center/ProAnalyst/Application%20Notes/App%20Note%20151%20-%20Image%20Processing%20Brightness,%20Contrast,%20Gamma%20and%20Exponential.pdf 
- * Ca aide pas mal, surtout pour la LUT de contraste. */
 
 /* La mission des fonctions suivantes : 
  * Remplir lut->r, lut->v et lut->b en fonction de lut->param1.*/
@@ -359,9 +353,23 @@ void LUT_diminutionLuminosite(LUT *lut) {
         lut->b[i] = max(0, (int)(i-lut->param1));
     }
 }
-void LUT_augmentationContraste(LUT *lut) {}
-void LUT_diminutionContraste(LUT *lut) {}
-/* Celles-ci ne sont pas demandées - fais-les si tu veux. */
+void LUT_augmentationContraste(LUT *lut) {
+    // de 0.1 à 25
+    //de base la valeur du contraste est à 2, correpondant à photo contrastée de base
+    size_t i;
+    for(i=0; i<256; i++) {
+        lut->r[i] = 255 / (1+exp(-lut->param1/10)*i);
+        lut->v[i] = 255 / (1+exp(-lut->param1/10)*i);
+        lut->b[i] = 255 / (1+exp(-lut->param1/10)*i);
+    }
+
+}
+void LUT_diminutionContraste(LUT *lut) {
+
+
+}
+
+/* Celles-ci ne sont pas demandées. */
 void LUT_augmentationR(LUT *lut) {
     size_t i;
     for(i=0; i<256; i++) {
@@ -410,7 +418,16 @@ void LUT_diminutionB(LUT *lut) {
         lut->b[i] = max(0, (int)(i-lut->param1));
     }
 }
+void LUT_ln(LUT *lut) {
+    size_t i;
+    for(i=0; i<256; i++) {
+        lut->r[i] = min(255, log(i)*(255-lut->param1)/5.0 +lut->param1);
+        lut->v[i] = min(255, log(i)*(255-lut->param1)/5.0 +lut->param1);
+        lut->b[i] = min(255, log(i)*(255-lut->param1)/5.0 +lut->param1);
+    }
+}
 void LUT_exp(LUT *lut) {
+    /* on appelle LUT_ln() puis on inverse les valeurs obtenues */
     LUT_ln(lut);
     
     size_t i;
@@ -420,14 +437,7 @@ void LUT_exp(LUT *lut) {
         lut->b[i] = 255-lut->b[255-i];
     }
 }
-void LUT_ln(LUT *lut) {
-    size_t i;
-    for(i=0; i<256; i++) {
-        lut->r[i] = min(255, log(i)*(255-lut->param1)/5.0 +lut->param1);
-        lut->v[i] = min(255, log(i)*(255-lut->param1)/5.0 +lut->param1);
-        lut->b[i] = min(255, log(i)*(255-lut->param1)/5.0 +lut->param1);
-    }
-}
-void LUT_gamma(LUT *lut) {}
-void LUT_cos(LUT *lut) {}
-void LUT_sin(LUT *lut) {}
+
+void LUT_gamma(LUT *lut){}
+void LUT_cos(LUT *lut){}
+void LUT_sin(LUT *lut){}
