@@ -353,15 +353,17 @@ void LUT_diminutionLuminosite(LUT *lut) {
         lut->b[i] = max(0, (int)(i-lut->param1));
     }
 }
+
+// Change la valeur du contraste
 void LUT_augmentationContraste(LUT *lut) {
-    // de 0.1 à 25
-    //de base la valeur du contraste est à 2, correpondant à photo contrastée de base
     size_t i;
-    for(i=0; i<256; i++) {
-        lut->r[i] = 255 / (1+exp(-lut->param1/10)*i);
-        lut->v[i] = 255 / (1+exp(-lut->param1/10)*i);
-        lut->b[i] = 255 / (1+exp(-lut->param1/10)*i);
+
+    for (i = 0 ; i < 256 ; i++){
+        lut->r[i] = min(255, max(0, (float)lut->param1*(i - 128.) + 128.));          
+        lut->v[i] = min(255, max(0, (float)lut->param1*(i - 128.) + 128.));        
+        lut->b[i] = min(255, max(0, (float)lut->param1*(i - 128.) + 128.));
     }
+
 
 }
 void LUT_diminutionContraste(LUT *lut) {
