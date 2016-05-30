@@ -364,11 +364,15 @@ void LUT_augmentationContraste(LUT *lut) {
         lut->b[i] = min(255, max(0, (float)lut->param1*(i - 128.) + 128.));
     }
 
-
 }
 void LUT_diminutionContraste(LUT *lut) {
+    size_t i;
 
-
+    for (i = 0 ; i < 256 ; i++){
+        lut->r[i] = min(255, max(0, (float)-lut->param1*(i - 128.) + 128.));          
+        lut->v[i] = min(255, max(0, (float)-lut->param1*(i - 128.) + 128.));        
+        lut->b[i] = min(255, max(0, (float)-lut->param1*(i - 128.) + 128.));
+    }
 }
 
 /* Celles-ci ne sont pas demandées. */
@@ -440,6 +444,7 @@ void LUT_exp(LUT *lut) {
     }
 }
 
+/* fonctions non implémentées */
 void LUT_gamma(LUT *lut){}
 void LUT_cos(LUT *lut){}
 void LUT_sin(LUT *lut){}
