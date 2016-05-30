@@ -160,9 +160,9 @@ static void cmd_clndv(Imagimp *imagimp, int argc, const char * const *argv)  { c
 static void cmd_clndb(Imagimp *imagimp, int argc, const char * const *argv)  { cmd_cln_helper(imagimp, argc, argv, LUT_diminutionB); }
 static void cmd_clnexp(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_exp); }
 static void cmd_clnln(Imagimp *imagimp, int argc, const char * const *argv)  { cmd_cln_helper(imagimp, argc, argv, LUT_ln); }
-static void cmd_clng(Imagimp *imagimp, int argc, const char * const *argv)   { cmd_cln_helper(imagimp, argc, argv, LUT_gamma); }
-static void cmd_clncos(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_cos); }
-static void cmd_clnsin(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_sin); }
+//static void cmd_clng(Imagimp *imagimp, int argc, const char * const *argv)   { cmd_cln_helper(imagimp, argc, argv, LUT_gamma); }
+//static void cmd_clncos(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_cos); }
+//static void cmd_clnsin(Imagimp *imagimp, int argc, const char * const *argv) { cmd_cln_helper(imagimp, argc, argv, LUT_sin); }
 static void cmd_clap(Imagimp *imagimp, int argc, const char * const *argv) { 
     Calque_appliquerPremiereLUT(imagimp->calques.courant);
     recalculerCalquePuisPilePuisAfficher(imagimp);
@@ -230,6 +230,9 @@ const ConsoleCmd CONSOLE_CMDS[CONSOLE_MAX_CMDS] = {
 { cmd_clndb,  {"clndb" , "DIMB"},            "Calque, LUT, Nouvelle, Diminution Bleu", "[0;255]"},
 { cmd_clnexp, {"clnexp", "EXP"},             "Calque, LUT, Nouvelle, Exponentielle", "[0;255]"},
 { cmd_clnln,  {"clnln" , "LN"},              "Calque, LUT, Nouvelle, Logarithme Neperien", "[0;255]"},
+//{ cmd_clng,   {"clng"  , "GAMMA"},           "Calque, LUT, Nouvelle, Gamma", "[0;255]"},
+//{ cmd_clncos, {"clncos", "COS"},             "Calque, LUT, Nouvelle, Cosinus", "[0;255]"},
+//{ cmd_clnsin, {"clnsin", "SIN"},             "Calque, LUT, Nouvelle, Sinus", "[0;255]"},
 { cmd_clap,   {"clap"  , "LUT_2"},           "Calque, LUT, Appliquer la Premiere de la liste", ""},
 { cmd_clsd,   {"clsd"  , "LUT_3"},           "Calque, LUT, Supprimer la Derniere de la liste", ""},
 { cmd_clpd,   {"clpd"  , "LUT_EXT_PARAMS"},  "Calque, LUT, changer les Parametres de la Derniere", "[0:255]"},

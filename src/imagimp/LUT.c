@@ -367,11 +367,11 @@ void LUT_augmentationContraste(LUT *lut) {
 }
 void LUT_diminutionContraste(LUT *lut) {
     size_t i;
-
+    float a = 1. / lut->param1;
     for (i = 0 ; i < 256 ; i++){
-        lut->r[i] = min(255, max(0, (float)-lut->param1*(i - 128.) + 128.));          
-        lut->v[i] = min(255, max(0, (float)-lut->param1*(i - 128.) + 128.));        
-        lut->b[i] = min(255, max(0, (float)-lut->param1*(i - 128.) + 128.));
+        lut->r[i] = min(255, max(0, (float)a*(i - 128.) + 128.));          
+        lut->v[i] = min(255, max(0, (float)a*(i - 128.) + 128.));        
+        lut->b[i] = min(255, max(0, (float)a*(i - 128.) + 128.));
     }
 }
 
